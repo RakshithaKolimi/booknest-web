@@ -1,10 +1,10 @@
+import { Login } from '@booknest/pages'
 import React from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 
 import BookDetail from '../src/Pages/BookDetail'
 import Books from '../src/Pages/Books'
 import Home from '../src/Pages/Home'
-import Login from '../src/Pages/Login'
 import Profile from '../src/Pages/Profile'
 import Register from '../src/Pages/Register'
 

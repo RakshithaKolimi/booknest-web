@@ -6,11 +6,12 @@
     "apps/*",
     "packages/*"
   ],
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --parallel",
     "build": "turbo run build",
-    "test": "turbo run test",
     "lint": "turbo run lint",
+    "test": "turbo run test",
     "format": "prettier --write .",
     "prepare": "husky install"
   },
@@ -43,6 +44,7 @@
     "jsdom": "^24.0.0",
     "postcss": "^8.4.24",
     "tailwindcss": "^4.1.14",
+    "tsup": "^8.5.0",
     "turbo": "^2.6.0",
     "typescript": "^5.1.6",
     "vite": "^5.2.0",
@@ -50,7 +52,9 @@
   },
   "description": "A small React + TypeScript frontend for the BookNest backend.",
   "main": "index.js",
-  "keywords": ["booknest"],
+  "keywords": [
+    "booknest"
+  ],
   "author": "Rakshitha Kolimi",
   "license": "ISC"
 }
