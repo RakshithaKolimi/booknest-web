@@ -1,0 +1,35 @@
+<!-- Save as booknest-logo.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" role="img" aria-labelledby="title desc">
+  <title id="title">BookNest logo</title>
+  <desc id="desc">An open book forming a nest with an egg, amber and blue colors.</desc>
+
+  <!-- Background circle (optional) -->
+  <circle cx="96" cy="96" r="96" fill="none" />
+
+  <!-- Left book page -->
+  <path d="M28 68c22-14 48-24 72-24 5 0 12 0 18 2 0 0-14 8-28 18-18 12-38 18-58 6z"
+        fill="#F59E0B" opacity="0.95"/>
+
+  <!-- Right book page -->
+  <path d="M164 68c-22-14-48-24-72-24-5 0-12 0-18 2 0 0 14 8 28 18 18 12 38 18 58 6z"
+        fill="#3B82F6" opacity="0.95"/>
+
+  <!-- Book spine (center overlap) -->
+  <path d="M80 74c8 6 24 11 36 11 4 0 12-2 16-4-14 10-34 16-52 12-6-1-10-4-14-7z"
+        fill="#ffffff" opacity="0.12"/>
+
+  <!-- Nest (curved lines inside book) -->
+  <g transform="translate(96,110) scale(1)">
+    <path d="M-36 -12c12 10 28 16 36 16 8 0 24-6 36-16" fill="none" stroke="#8B5CF6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+    <path d="M-28 -6c8 6 18 10 28 10 10 0 20-4 28-10" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  </g>
+
+  <!-- Egg (nest center) -->
+  <ellipse cx="96" cy="92" rx="12" ry="16" fill="#FFF8E1" stroke="#F59E0B" stroke-width="2"/>
+
+  <!-- Brand wordmark (optional) -->
+  <g transform="translate(96,156)" text-anchor="middle" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial" font-weight="600">
+    <text x="0" y="0" font-size="16" fill="#3B82F6">Book</text>
+    <text x="44" y="0" font-size="16" fill="#3B82F6">Nest</text>
+  </g>
+</svg>

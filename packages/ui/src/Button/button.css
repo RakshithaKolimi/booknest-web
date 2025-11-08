@@ -11,12 +11,17 @@
 
 /* only for login */
 .btn-login {
-  width: 5rem;
-  background-color: '';
+  width: 75%;
+  min-height: 40px;
   color: white;
   font-size: 20px;
+  border-radius: 16px;
+  background-color: #6ab7bc;
+  margin: 8px 4px 40px;
 }
 
 .btn-login:hover {
-  background-color: darkorange;
+  background-color: teal;
+  box-shadow: 0 0 4px teal;
 }
+

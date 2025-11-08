@@ -1,4 +1,5 @@
 import { Login } from '@booknest/pages'
+import { Header } from '@booknest/ui'
 import { safeLocalStorage } from '@booknest/utils'
 import React from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
@@ -17,16 +18,18 @@ export default function App() {
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold">BookNest</h1>
+          <Header />
           {isAuthenticated && (
-            <nav className="space-x-4">
-              <Link to="/" className="text-blue-600">
-                Home
-              </Link>
-              <Link to="/books" className="text-blue-600">
-                Books
-              </Link>
-            </nav>
+            <>
+              <nav className="space-x-4">
+                <Link to="/" className="text-blue-600">
+                  Home
+                </Link>
+                <Link to="/books" className="text-blue-600">
+                  Books
+                </Link>
+              </nav>
+            </>
           )}
         </div>
       </header>

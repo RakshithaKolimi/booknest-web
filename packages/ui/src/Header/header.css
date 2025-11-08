@@ -1,0 +1,11 @@
+.booknest-header {
+  display: flex;
+  align-items: center;
+  font-size: 40px;
+  font-family: cursive;
+  margin-bottom: 0;
+}
+
+.logo-image {
+  margin-right: 8px;
+}
