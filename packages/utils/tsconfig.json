@@ -1,8 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
   },
-  "include": ["src", "global.d.ts"]
+  "include": ["src"]
 }

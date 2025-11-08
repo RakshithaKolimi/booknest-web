@@ -3,11 +3,26 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "lib": [
+    "DOM",
+    "DOM.Iterable",
+    "ESNext"
+  ],
+  "baseUrl": ".",
   "scripts": {
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "build": "tsup src/index.ts --format cjs,esm --dts"
   },
   "devDependencies": {
     "typescript": "^5.4.0"
-  }
+  },
+  "include": [
+    "src",
+    "global.d.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

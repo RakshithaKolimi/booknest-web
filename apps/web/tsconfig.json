@@ -1,8 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "lib": ["DOM", "DOM.Iterable", "ESNext"], // ✅ allows localStorage, window, document, etc.
+    "jsx": "react-jsx", // ✅ new JSX transform
+    "moduleResolution": "Node", // ✅ proper module lookup in monorepo
+    "strict": true, // ✅ enables strict type checking
+    "esModuleInterop": true, // ✅ ensures clean imports from commonjs packages
+    "skipLibCheck": true, // ✅ faster build (recommended for monorepos)
+    "forceConsistentCasingInFileNames": true, // ✅ ensures consistent imports across OS
+    "baseUrl": ".", // ✅ allows absolute imports from app root
+    "paths": {
+      "@booknest/*": ["../../packages/*/src"] // ✅ map your workspace packages (important)
+    }
   },
-  "include": ["src", "global.d.ts", "vite.config.ts"]
+  "include": ["src", "global.d.ts", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }
