@@ -1,6 +1,6 @@
 {
   "name": "@booknest/services",
   "version": "1.0.0",
-  "main": "src/api.ts",
+  "main": "src/index.ts",
   "private": true
 }

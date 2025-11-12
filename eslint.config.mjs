@@ -9,22 +9,26 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import prettierPlugin from 'eslint-plugin-prettier'
 
 export default [
-  js.configs.recommended,
+  // ✅ Include JS recommended config with browser globals
+  {
+    ...js.configs.recommended,
+    languageOptions: {
+      globals: {
+        ...js.environments.browser.globals, // 👈 adds DOM globals like HTMLInputElement
+        ...js.environments.es2021.globals,
+        process: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+      },
+    },
+  },
+
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: {
-        document: 'readonly',
-        window: 'readonly',
-        navigator: 'readonly',
-        NodeJS: 'readonly',
-        process: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-      },
     },
     plugins: {
       '@typescript-eslint': ts,
@@ -41,6 +45,7 @@ export default [
       ...jsxA11y.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
 
+      // ✅ common project rules
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
@@ -53,6 +58,7 @@ export default [
       react: { version: 'detect' },
     },
   },
+
   {
     ignores: ['node_modules', 'dist', 'build', '.env', 'vite.config.ts'],
   },
