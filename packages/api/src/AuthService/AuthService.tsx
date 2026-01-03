@@ -14,9 +14,19 @@ export type ILoginInput = {
   password: string
 }
 
+export type IForgotPasswordInput = {
+  email: string
+}
+
 export type ILoginResponse = {
   message: string
   token: string
+}
+
+export async function forgotPassword(
+  input: IForgotPasswordInput
+): Promise<AxiosResponse<string>> {
+  return await api.post<string>('/forgot-password', input)
 }
 
 export async function register(
