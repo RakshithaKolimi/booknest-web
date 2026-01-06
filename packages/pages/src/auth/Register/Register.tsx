@@ -46,7 +46,9 @@ export default function Register(): React.ReactElement {
     try {
       setLoading(true)
 
-      await AuthService.login({
+      await AuthService.register({
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
         email: formData.email.trim(),
         password: formData.password,
       })
