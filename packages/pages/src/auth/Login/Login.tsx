@@ -41,6 +41,7 @@ export default function Login(): React.ReactElement {
       const response = await AuthService.login({
         email: formData.email.trim(),
         password: formData.password,
+        
       })
       safeLocalStorage.set('token', response.data.token)
 

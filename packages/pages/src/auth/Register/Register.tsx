@@ -1,6 +1,7 @@
 import '../common/index.css'
 
 import { AuthService } from '@booknest/services'
+import { DefaultCountryCode } from '@booknest/utils'
 import { Button, Header } from '@booknest/ui'
 import React, { useEffect, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast'
@@ -17,7 +18,9 @@ export default function Register(): React.ReactElement {
     first_name: '',
     last_name: '',
     email: '',
+    mobile: '',
     password: '',
+    role: AuthService.UserRoleType.User,
     confirm_password: '',
   })
 
@@ -46,11 +49,15 @@ export default function Register(): React.ReactElement {
     try {
       setLoading(true)
 
+      const mobileWithCountryCode = DefaultCountryCode + formData.mobile
+
       await AuthService.register({
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         email: formData.email.trim(),
+        mobile: mobileWithCountryCode,
         password: formData.password,
+        role: formData.role,
       })
 
       toast.success('Account created successfully! Redirecting to login...')
@@ -97,6 +104,15 @@ export default function Register(): React.ReactElement {
             type="email"
             placeholder="Email address"
             value={formData.email}
+            onChange={handleChange}
+            className="log-in-input"
+            required
+          />
+           <input
+            name="mobile"
+            type="mobile"
+            placeholder="Mobile"
+            value={formData.mobile}
             onChange={handleChange}
             className="log-in-input"
             required

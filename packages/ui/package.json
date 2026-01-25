@@ -10,7 +10,8 @@
     "build": "tsup src/index.ts --format cjs,esm --dts"
   },
   "dependencies": {
-    "@booknest/utils": "workspace:*"
+    "@booknest/utils": "workspace:*",
+    "lucide-react": "^0.563.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

@@ -7,7 +7,7 @@ import {
 import { Header } from '@booknest/ui'
 import { safeLocalStorage } from '@booknest/utils'
 import React from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 
 import BookDetail from '../src/Pages/BookDetail'
 import Books from '../src/Pages/Books'
@@ -15,9 +15,17 @@ import Home from '../src/Pages/Home'
 import Profile from '../src/Pages/Profile'
 import PrivateRoute from './routes/PrivateRoute'
 import PublicRoute from './routes/PublicRoute'
+import { Logout } from '@booknest/ui'
 
 export default function App() {
   const isAuthenticated = safeLocalStorage.get('token')
+  const navigate = useNavigate()
+
+  const onLogout = () => {
+    safeLocalStorage.remove('token')
+    navigate('/login')
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow">
@@ -25,13 +33,10 @@ export default function App() {
           <Header />
           {isAuthenticated && (
             <>
-              <nav className="space-x-4">
-                <Link to="/" className="text-blue-600">
-                  Home
-                </Link>
-                <Link to="/books" className="text-blue-600">
-                  Books
-                </Link>
+              <nav className="flex items-center mr-4">
+                <div onClick={onLogout} className="mr-4">
+                  <Logout width="2rem" height="2rem" />
+                </div>
               </nav>
             </>
           )}

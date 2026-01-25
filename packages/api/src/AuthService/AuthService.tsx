@@ -2,20 +2,29 @@ import { AxiosResponse } from 'axios'
 
 import api from '../api'
 
+export enum UserRoleType {
+  User = 'USER',
+  Admin = 'ADMIN',
+}
+
 export type IRegisterInput = {
   email: string
   first_name: string
   last_name: string
+  mobile: string
   password: string
+  role: string
 }
 
 export type ILoginInput = {
   email: string
+  mobile?: string
   password: string
 }
 
 export type IForgotPasswordInput = {
   email: string
+  mobile?: string
 }
 
 export type ILoginResponse = {

@@ -1,14 +1,12 @@
 import React from 'react'
+import { Power } from 'lucide-react'
 import { IIconProps } from '../common/common'
 
-
-
-export function Logo(props: IIconProps): React.ReactElement {
+export function Logout(props: IIconProps): React.ReactElement {
   const { width, height, className, style } = props
   return (
-    <img
-      src="/logo.svg"
-      alt="Book Nest"
+    <Power
+      name='Logout'
       width={width}
       height={height}
       className={className}
