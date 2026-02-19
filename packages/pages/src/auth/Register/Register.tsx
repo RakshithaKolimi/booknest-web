@@ -33,6 +33,13 @@ export default function Register(): React.ReactElement {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      role: e.target.value as AuthService.UserRoleType,
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -135,6 +142,15 @@ export default function Register(): React.ReactElement {
             className="log-in-input"
             required
           />
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleRoleChange}
+            className="log-in-input"
+          >
+            <option value={AuthService.UserRoleType.User}>User</option>
+            <option value={AuthService.UserRoleType.Admin}>Admin</option>
+          </select>
 
           <Button
             label={loading ? 'Signing Up...' : 'Sign Up'}

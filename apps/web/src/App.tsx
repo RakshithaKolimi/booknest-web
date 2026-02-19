@@ -3,73 +3,157 @@ import {
   Login,
   Register,
   ResetSuccessful,
+  UnAuthorized,
 } from '@booknest/pages'
 import { Header } from '@booknest/ui'
-import { safeLocalStorage } from '@booknest/utils'
 import React from 'react'
-import { Link, Route, Routes, useNavigate } from 'react-router-dom'
+import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 
-import BookDetail from '../src/Pages/BookDetail'
-import Books from '../src/Pages/Books'
-import Home from '../src/Pages/Home'
-import Profile from '../src/Pages/Profile'
+import AdminBooks from './Pages/AdminBooks'
+import AdminOrders from './Pages/AdminOrders'
+import BookDetail from './Pages/BookDetail'
+import Books from './Pages/Books'
+import Cart from './Pages/Cart'
+import Home from './Pages/Home'
+import NotFound from './Pages/NotFound'
+import Orders from './Pages/Orders'
+import Profile from './Pages/Profile'
 import PrivateRoute from './routes/PrivateRoute'
 import PublicRoute from './routes/PublicRoute'
+import RoleBasedRoute from './routes/RoleBasedRoutes'
 import { Logout } from '@booknest/ui'
+import { clearAuthSession, getRole } from './utils/auth'
 
 export default function App() {
-  const isAuthenticated = safeLocalStorage.get('token')
+  const location = useLocation()
+  const role = getRole()
+  const isAuthenticated = Boolean(role)
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-successful'
+
   const navigate = useNavigate()
 
   const onLogout = () => {
-    safeLocalStorage.remove('token')
+    clearAuthSession()
     navigate('/login')
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Header />
-          {isAuthenticated && (
-            <>
-              <nav className="flex items-center mr-4">
-                <div onClick={onLogout} className="mr-4">
+    <div className="bn-shell">
+      {!isAuthPage && (
+        <header className="bn-header sticky top-0 z-20">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+            <Header />
+            {isAuthenticated && (
+              <nav className="flex items-center gap-4">
+                <NavLink to="/" className="app-link">
+                  Home
+                </NavLink>
+                <NavLink to="/books" className="app-link">
+                  Books
+                </NavLink>
+                {role === 'ADMIN' ? (
+                  <>
+                    <NavLink to="/admin/books" className="app-link">
+                      Admin Books
+                    </NavLink>
+                    <NavLink to="/admin/orders" className="app-link">
+                      Admin Orders
+                    </NavLink>
+                  </>
+                ) : (
+                  <>
+                    <NavLink to="/cart" className="app-link">
+                      Cart
+                    </NavLink>
+                    <NavLink to="/orders" className="app-link">
+                      Orders
+                    </NavLink>
+                  </>
+                )}
+                <NavLink to="/profile" className="app-link">
+                  Profile
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex items-center rounded-full p-1 transition hover:bg-orange-100"
+                  aria-label="Logout"
+                >
                   <Logout width="2rem" height="2rem" />
-                </div>
+                </button>
               </nav>
-            </>
-          )}
+            )}
+          </div>
+        </header>
+      )}
+
+      <main
+        className={isAuthPage ? '' : 'bn-main mx-auto w-full max-w-7xl px-4 py-8'}
+      >
+        <div className={isAuthPage ? '' : 'space-y-2'}>
+          <Routes>
+            <Route path="/login" element={<PublicRoute element={<Login />} />} />
+            <Route
+              path="/register"
+              element={<PublicRoute element={<Register />} />}
+            />
+            <Route
+              path="/forgot-password"
+              element={<PublicRoute element={<ForgotPassword />} />}
+            />
+            <Route
+              path="/reset-successful"
+              element={<PublicRoute element={<ResetSuccessful />} />}
+            />
+
+            <Route path="/" element={<PrivateRoute element={<Home />} />} />
+            <Route path="/books" element={<PrivateRoute element={<Books />} />} />
+            <Route
+              path="/books/:id"
+              element={<PrivateRoute element={<BookDetail />} />}
+            />
+            <Route
+              path="/cart"
+              element={
+                <RoleBasedRoute element={<Cart />} allowedRoles={['USER']} />
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <RoleBasedRoute element={<Orders />} allowedRoles={['USER']} />
+              }
+            />
+            <Route
+              path="/admin/books"
+              element={
+                <RoleBasedRoute
+                  element={<AdminBooks />}
+                  allowedRoles={['ADMIN']}
+                />
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <RoleBasedRoute
+                  element={<AdminOrders />}
+                  allowedRoles={['ADMIN']}
+                />
+              }
+            />
+            <Route
+              path="/profile"
+              element={<PrivateRoute element={<Profile />} />}
+            />
+            <Route path="/unauthorized" element={<UnAuthorized />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/login" element={<PublicRoute element={<Login />} />} />
-          <Route
-            path="/register"
-            element={<PublicRoute element={<Register />} />}
-          />
-          <Route
-            path="/forgot-password"
-            element={<PublicRoute element={<ForgotPassword />} />}
-          />
-          <Route
-            path="/reset-successful"
-            element={<PublicRoute element={<ResetSuccessful />} />}
-          />
-
-          <Route path="/" element={<PrivateRoute element={<Home />} />} />
-          <Route path="/books" element={<PrivateRoute element={<Books />} />} />
-          <Route
-            path="/books/:id"
-            element={<PrivateRoute element={<BookDetail />} />}
-          />
-          <Route
-            path="/profile"
-            element={<PrivateRoute element={<Profile />} />}
-          />
-        </Routes>
       </main>
     </div>
   )

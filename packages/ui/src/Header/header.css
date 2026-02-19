@@ -1,11 +1,18 @@
 .booknest-header {
   display: flex;
   align-items: center;
-  font-size: 40px;
-  font-family: cursive;
+  font-size: 2rem;
+  font-family:
+    'Fraunces',
+    'Iowan Old Style',
+    'Times New Roman',
+    serif;
+  letter-spacing: 0.02em;
+  color: #7c2d12;
   margin-bottom: 0;
 }
 
 .logo-image {
   margin-right: 8px;
+  filter: drop-shadow(0 5px 14px rgba(194, 65, 12, 0.28));
 }
