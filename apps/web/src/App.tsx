@@ -57,8 +57,8 @@ export default function App() {
                 </NavLink>
                 {role === 'ADMIN' ? (
                   <>
-                    <NavLink to="/admin/books" className="app-link">
-                      Admin Books
+                    <NavLink to="/admin/manage" className="app-link">
+                      Manage
                     </NavLink>
                     <NavLink to="/admin/orders" className="app-link">
                       Admin Orders
@@ -126,6 +126,15 @@ export default function App() {
               path="/orders"
               element={
                 <RoleBasedRoute element={<Orders />} allowedRoles={['USER']} />
+              }
+            />
+            <Route
+              path="/admin/manage"
+              element={
+                <RoleBasedRoute
+                  element={<AdminBooks />}
+                  allowedRoles={['ADMIN']}
+                />
               }
             />
             <Route

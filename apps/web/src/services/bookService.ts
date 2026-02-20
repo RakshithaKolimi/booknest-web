@@ -4,6 +4,7 @@ export type Book = {
   id: string
   name: string
   author_name: string
+  author_id: string
   available_stock: number
   image_url?: string | null
   is_active: boolean
@@ -19,6 +20,7 @@ export type Book = {
 export type BookInput = {
   name: string
   author_name: string
+  author_id?: string
   available_stock: number
   image_url?: string
   is_active: boolean
@@ -43,4 +45,13 @@ export async function getBookById(id: string): Promise<Book> {
 export async function createBook(payload: BookInput): Promise<Book> {
   const response = await client.post<Book>('/books', payload)
   return response.data
+}
+
+export async function updateBook(id: string, payload: BookInput): Promise<Book> {
+  const response = await client.put<Book>(`/books/${id}`, payload)
+  return response.data
+}
+
+export async function deleteBook(id: string): Promise<void> {
+  await client.delete(`/books/${id}`)
 }

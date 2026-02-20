@@ -12,9 +12,9 @@ export default function Home(): React.ReactElement {
         ? [
             {
               title: 'Manage Catalog',
-              description: 'Create and maintain your book inventory.',
-              path: '/admin/books',
-              cta: 'Go to Admin Books',
+              description: 'Create and maintain books, publishers, and authors.',
+              path: '/admin/manage',
+              cta: 'Open Manage',
             },
             {
               title: 'Track All Orders',
@@ -48,7 +48,7 @@ export default function Home(): React.ReactElement {
 
   return (
     <section className="space-y-6">
-      <div className="bn-card rounded-2xl bg-gradient-to-r from-orange-100/90 via-amber-50 to-rose-100/80 p-7">
+      <div className="bn-card rounded-2xl bg-linear-to-r from-orange-100/90 via-amber-50 to-rose-100/80 p-7">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">
           BookNest
         </p>

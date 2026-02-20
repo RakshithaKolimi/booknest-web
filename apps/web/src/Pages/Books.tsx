@@ -6,9 +6,9 @@ import { type Book, listBooks } from '../services/bookService'
 import { getRole } from '../utils/auth'
 
 function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
   }).format(price)
 }
 
@@ -86,10 +86,10 @@ export default function Books(): React.ReactElement {
           />
           {isAdmin && (
             <Link
-              to="/admin/books"
+              to="/admin/manage"
               className="bn-button px-4 py-2 text-sm"
             >
-              Admin
+              Manage
             </Link>
           )}
         </div>
