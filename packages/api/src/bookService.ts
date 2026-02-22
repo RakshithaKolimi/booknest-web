@@ -1,4 +1,4 @@
-import client from './client'
+import { deleteData, getData, postData, putData } from './request'
 
 export type BookCategory = {
   id: string
@@ -39,25 +39,21 @@ export type BookInput = {
 }
 
 export async function listBooks(): Promise<Book[]> {
-  const response = await client.get<Book[]>('/books')
-  return response.data
+  return getData<Book[]>('/books')
 }
 
 export async function getBookById(id: string): Promise<Book> {
-  const response = await client.get<Book>(`/books/${id}`)
-  return response.data
+  return getData<Book>(`/books/${id}`)
 }
 
 export async function createBook(payload: BookInput): Promise<Book> {
-  const response = await client.post<Book>('/books', payload)
-  return response.data
+  return postData<Book, BookInput>('/books', payload)
 }
 
 export async function updateBook(id: string, payload: BookInput): Promise<Book> {
-  const response = await client.put<Book>(`/books/${id}`, payload)
-  return response.data
+  return putData<Book, BookInput>(`/books/${id}`, payload)
 }
 
 export async function deleteBook(id: string): Promise<void> {
-  await client.delete(`/books/${id}`)
+  await deleteData(`/books/${id}`)
 }

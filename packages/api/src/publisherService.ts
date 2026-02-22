@@ -1,4 +1,4 @@
-import client from './client'
+import { deleteData, getData, postData, putData } from './request'
 
 export type Publisher = {
   id: string
@@ -29,23 +29,20 @@ export type PublisherInput = {
 }
 
 export async function listPublishers(): Promise<Publisher[]> {
-  const response = await client.get<Publisher[]>('/publishers')
-  return response.data
+  return getData<Publisher[]>('/publishers')
 }
 
 export async function createPublisher(payload: PublisherInput): Promise<Publisher> {
-  const response = await client.post<Publisher>('/publishers', payload)
-  return response.data
+  return postData<Publisher, PublisherInput>('/publishers', payload)
 }
 
 export async function updatePublisher(
   id: string,
   payload: PublisherInput
 ): Promise<Publisher> {
-  const response = await client.put<Publisher>(`/publishers/${id}`, payload)
-  return response.data
+  return putData<Publisher, PublisherInput>(`/publishers/${id}`, payload)
 }
 
 export async function deletePublisher(id: string): Promise<void> {
-  await client.delete(`/publishers/${id}`)
+  await deleteData(`/publishers/${id}`)
 }

@@ -1,14 +1,3 @@
-import axios from 'axios'
+import client from './client'
 
-// Read from Vite environment variables
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
-
-const api = axios.create({
-  baseURL: API_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-})
-
-export default api
+export default client

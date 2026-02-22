@@ -36,7 +36,7 @@ export default function ForgotPassword(): React.ReactElement {
     try {
       setLoading(true)
 
-      const response = await AuthService.forgotPassword({
+      await AuthService.forgotPassword({
         email: formData.email.trim(),
       })
 

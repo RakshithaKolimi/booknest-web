@@ -1,4 +1,4 @@
-import client from './client'
+import { deleteData, getData, postData, putData } from './request'
 
 export type Author = {
   id: string
@@ -12,20 +12,17 @@ export type AuthorInput = {
 }
 
 export async function listAuthors(): Promise<Author[]> {
-  const response = await client.get<Author[]>('/authors')
-  return response.data
+  return getData<Author[]>('/authors')
 }
 
 export async function createAuthor(payload: AuthorInput): Promise<Author> {
-  const response = await client.post<Author>('/authors', payload)
-  return response.data
+  return postData<Author, AuthorInput>('/authors', payload)
 }
 
 export async function updateAuthor(id: string, payload: AuthorInput): Promise<Author> {
-  const response = await client.put<Author>(`/authors/${id}`, payload)
-  return response.data
+  return putData<Author, AuthorInput>(`/authors/${id}`, payload)
 }
 
 export async function deleteAuthor(id: string): Promise<void> {
-  await client.delete(`/authors/${id}`)
+  await deleteData(`/authors/${id}`)
 }

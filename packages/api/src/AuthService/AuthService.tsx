@@ -1,6 +1,4 @@
-import { AxiosResponse } from 'axios'
-
-import api from '../api'
+import { postData } from '../request'
 
 export enum UserRoleType {
   User = 'USER',
@@ -34,18 +32,18 @@ export type ILoginResponse = {
 
 export async function forgotPassword(
   input: IForgotPasswordInput
-): Promise<AxiosResponse<string>> {
-  return await api.post<string>('/forgot-password', input)
+): Promise<string> {
+  return postData<string, IForgotPasswordInput>('/forgot-password', input)
 }
 
 export async function register(
   input: IRegisterInput
-): Promise<AxiosResponse<string>> {
-  return await api.post<string>('/register', input)
+): Promise<string> {
+  return postData<string, IRegisterInput>('/register', input)
 }
 
 export async function login(
   input: ILoginInput
-): Promise<AxiosResponse<ILoginResponse>> {
-  return await api.post<ILoginResponse>('/login', input)
+): Promise<ILoginResponse> {
+  return postData<ILoginResponse, ILoginInput>('/login', input)
 }

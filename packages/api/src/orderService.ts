@@ -1,4 +1,4 @@
-import client from './client'
+import { getData, postData } from './request'
 
 export type PaymentMethod = 'COD' | 'CREDIT_CARD' | 'DEBIT_CARD' | 'NET_BANKING' | 'UPI'
 
@@ -30,27 +30,25 @@ export type OrderView = {
 }
 
 export async function checkout(payment_method: PaymentMethod): Promise<OrderView> {
-  const response = await client.post<OrderView>('/orders/checkout', { payment_method })
-  return response.data
+  return postData<OrderView, { payment_method: PaymentMethod }>('/orders/checkout', {
+    payment_method,
+  })
 }
 
 export async function confirmPayment(
   order_id: string,
   success: boolean
 ): Promise<OrderView> {
-  const response = await client.post<OrderView>('/orders/confirm', {
+  return postData<OrderView, { order_id: string; success: boolean }>('/orders/confirm', {
     order_id,
     success,
   })
-  return response.data
 }
 
 export async function listMyOrders(): Promise<OrderView[]> {
-  const response = await client.get<OrderView[]>('/orders')
-  return response.data
+  return getData<OrderView[]>('/orders')
 }
 
 export async function listAllOrders(): Promise<OrderView[]> {
-  const response = await client.get<OrderView[]>('/admin/orders')
-  return response.data
+  return getData<OrderView[]>('/admin/orders')
 }

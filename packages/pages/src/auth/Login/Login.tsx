@@ -68,7 +68,7 @@ export default function Login(): React.ReactElement {
         email: formData.email.trim(),
         password: formData.password,
       })
-      const token = response.data.token
+      const token = response.token
       safeLocalStorage.set('token', token)
 
       const claims = decodeToken(token)

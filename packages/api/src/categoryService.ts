@@ -1,4 +1,4 @@
-import client from './client'
+import { deleteData, getData, postData, putData } from './request'
 
 export type Category = {
   id: string
@@ -12,23 +12,20 @@ export type CategoryInput = {
 }
 
 export async function listCategories(): Promise<Category[]> {
-  const response = await client.get<Category[]>('/categories')
-  return response.data
+  return getData<Category[]>('/categories')
 }
 
 export async function createCategory(payload: CategoryInput): Promise<Category> {
-  const response = await client.post<Category>('/categories', payload)
-  return response.data
+  return postData<Category, CategoryInput>('/categories', payload)
 }
 
 export async function updateCategory(
   id: string,
   payload: CategoryInput
 ): Promise<Category> {
-  const response = await client.put<Category>(`/categories/${id}`, payload)
-  return response.data
+  return putData<Category, CategoryInput>(`/categories/${id}`, payload)
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  await client.delete(`/categories/${id}`)
+  await deleteData(`/categories/${id}`)
 }

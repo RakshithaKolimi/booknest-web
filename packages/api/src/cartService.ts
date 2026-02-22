@@ -1,4 +1,4 @@
-import client from './client'
+import { deleteData, getData, postData, putData } from './request'
 
 export type CartItem = {
   book_id: string
@@ -19,28 +19,30 @@ export type CartView = {
 }
 
 export async function getCart(): Promise<CartView> {
-  const response = await client.get<CartView>('/cart')
-  return response.data
+  return getData<CartView>('/cart')
 }
 
 export async function addToCart(book_id: string, count: number): Promise<CartView> {
-  const response = await client.post<CartView>('/cart/items', { book_id, count })
-  return response.data
+  return postData<CartView, { book_id: string; count: number }>('/cart/items', {
+    book_id,
+    count,
+  })
 }
 
 export async function updateCartItem(
   book_id: string,
   count: number
 ): Promise<CartView> {
-  const response = await client.put<CartView>('/cart/items', { book_id, count })
-  return response.data
+  return putData<CartView, { book_id: string; count: number }>('/cart/items', {
+    book_id,
+    count,
+  })
 }
 
 export async function removeCartItem(bookId: string): Promise<CartView> {
-  const response = await client.delete<CartView>(`/cart/items/${bookId}`)
-  return response.data
+  return deleteData<CartView>(`/cart/items/${bookId}`)
 }
 
 export async function clearCart(): Promise<void> {
-  await client.post('/cart/clear')
+  await postData('/cart/clear')
 }
