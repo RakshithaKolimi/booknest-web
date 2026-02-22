@@ -16,8 +16,16 @@ export default defineConfig({
       '@booknest/utils': path.resolve(__dirname, '../../packages/utils/src'),
       '@booknest/pages': path.resolve(__dirname, '../../packages/pages/src'),
       '@booknest/services': path.resolve(__dirname, '../../packages/api/src'),
-      '@booknest/ui-helpers': path.resolve(__dirname, '../../packages/ui-helpers/src'),
+      '@booknest/ui-helpers': path.resolve(
+        __dirname,
+        '../../packages/ui-helpers/src'
+      ),
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/setupTests.ts',
   },
   server: {
     port: 3000,

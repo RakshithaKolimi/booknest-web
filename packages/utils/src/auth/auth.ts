@@ -1,4 +1,4 @@
-import { safeLocalStorage } from '@booknest/utils'
+import { safeLocalStorage } from '../storage/StorageUtil'
 
 export type UserRole = 'USER' | 'ADMIN'
 
