@@ -6,7 +6,7 @@ import {
   listAuthors,
   type Author,
   updateAuthor,
-} from '../services/authorService'
+} from '@booknest/services/authorService'
 import {
   createBook,
   deleteBook,
@@ -14,7 +14,7 @@ import {
   type Book,
   type BookInput,
   updateBook,
-} from '../services/bookService'
+} from '@booknest/services/bookService'
 import {
   createPublisher,
   deletePublisher,
@@ -22,16 +22,17 @@ import {
   type Publisher,
   type PublisherInput,
   updatePublisher,
-} from '../services/publisherService'
+} from '@booknest/services/publisherService'
+import {
+  createCategory,
+  deleteCategory,
+  listCategories,
+  type Category,
+  updateCategory,
+} from '@booknest/services/categoryService'
+import { formatPrice } from '@booknest/utils'
 
-type Tab = 'books' | 'publishers' | 'authors'
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(price)
-}
+type Tab = 'books' | 'publishers' | 'authors' | 'categories'
 
 const initialBookForm: BookInput = {
   name: '',
@@ -69,27 +70,32 @@ export default function AdminBooks(): React.ReactElement {
   const [books, setBooks] = useState<Book[]>([])
   const [authors, setAuthors] = useState<Author[]>([])
   const [publishers, setPublishers] = useState<Publisher[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   const [editingBookId, setEditingBookId] = useState('')
   const [editingAuthorId, setEditingAuthorId] = useState('')
   const [editingPublisherId, setEditingPublisherId] = useState('')
+  const [editingCategoryId, setEditingCategoryId] = useState('')
 
   const [bookForm, setBookForm] = useState(initialBookForm)
   const [authorName, setAuthorName] = useState('')
   const [publisherForm, setPublisherForm] = useState(initialPublisherForm)
+  const [categoryName, setCategoryName] = useState('')
 
   const loadAll = async () => {
     setLoading(true)
     setError('')
     try {
-      const [bookData, authorData, publisherData] = await Promise.all([
+      const [bookData, authorData, publisherData, categoryData] = await Promise.all([
         listBooks(),
         listAuthors(),
         listPublishers(),
+        listCategories(),
       ])
       setBooks(bookData)
       setAuthors(authorData)
       setPublishers(publisherData)
+      setCategories(categoryData)
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Failed to load management data')
     } finally {
@@ -117,6 +123,11 @@ export default function AdminBooks(): React.ReactElement {
     setEditingPublisherId('')
   }
 
+  const resetCategoryForm = () => {
+    setCategoryName('')
+    setEditingCategoryId('')
+  }
+
   const onSubmitBook = async (event: React.FormEvent) => {
     event.preventDefault()
     const selectedAuthor = authors.find(
@@ -134,6 +145,7 @@ export default function AdminBooks(): React.ReactElement {
         ...bookForm,
         author_id: selectedAuthor.id,
         author_name: selectedAuthor.name,
+        category_ids: bookForm.category_ids || [],
         image_url: bookForm.image_url || undefined,
         isbn: bookForm.isbn || undefined,
       }
@@ -189,6 +201,25 @@ export default function AdminBooks(): React.ReactElement {
     }
   }
 
+  const onSubmitCategory = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      if (editingCategoryId) {
+        await updateCategory(editingCategoryId, { name: categoryName })
+      } else {
+        await createCategory({ name: categoryName })
+      }
+      resetCategoryForm()
+      await loadAll()
+    } catch (e: any) {
+      setError(e?.response?.data?.error || 'Failed to save category')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const onDeleteBook = async (id: string) => {
     if (!window.confirm('Delete this book?')) return
     setError('')
@@ -225,6 +256,18 @@ export default function AdminBooks(): React.ReactElement {
     }
   }
 
+  const onDeleteCategory = async (id: string) => {
+    if (!window.confirm('Delete this category?')) return
+    setError('')
+    try {
+      await deleteCategory(id)
+      await loadAll()
+      if (editingCategoryId === id) resetCategoryForm()
+    } catch (e: any) {
+      setError(e?.response?.data?.error || 'Failed to delete category')
+    }
+  }
+
   const startEditBook = (book: Book) => {
     setTab('books')
     setEditingBookId(book.id)
@@ -240,7 +283,7 @@ export default function AdminBooks(): React.ReactElement {
       price: book.price,
       discount_percentage: book.discount_percentage,
       publisher_id: book.publisher_id,
-      category_ids: [],
+      category_ids: book.categories?.map((category) => category.id) || [],
     })
   }
 
@@ -266,12 +309,18 @@ export default function AdminBooks(): React.ReactElement {
     })
   }
 
+  const startEditCategory = (category: Category) => {
+    setTab('categories')
+    setEditingCategoryId(category.id)
+    setCategoryName(category.name)
+  }
+
   return (
     <section className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold text-zinc-900">Manage Catalog</h1>
         <p className="text-sm text-zinc-600">
-          Create, edit, and delete books, publishers, and authors.
+          Create, edit, and delete books, publishers, authors, and categories.
         </p>
       </div>
 
@@ -296,6 +345,13 @@ export default function AdminBooks(): React.ReactElement {
           onClick={() => setTab('authors')}
         >
           Authors
+        </button>
+        <button
+          type="button"
+          className={`rounded-full px-3 py-1.5 text-sm font-semibold ${tab === 'categories' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-700'}`}
+          onClick={() => setTab('categories')}
+        >
+          Categories
         </button>
       </div>
 
@@ -374,6 +430,29 @@ export default function AdminBooks(): React.ReactElement {
                   placeholder="Stock"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 />
+                <select
+                  multiple
+                  value={bookForm.category_ids || []}
+                  onChange={(event) => {
+                    const selectedCategoryIDs = Array.from(
+                      event.target.selectedOptions
+                    ).map((option) => option.value)
+                    setBookForm({
+                      ...bookForm,
+                      category_ids: selectedCategoryIDs,
+                    })
+                  }}
+                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-zinc-500 md:col-span-2">
+                  Hold Ctrl/Command to select multiple categories.
+                </p>
                 <select
                   required
                   value={bookForm.publisher_id}
@@ -455,6 +534,7 @@ export default function AdminBooks(): React.ReactElement {
                       <tr>
                         <th className="pb-2 pr-4">Name</th>
                         <th className="pb-2 pr-4">Author</th>
+                        <th className="pb-2 pr-4">Categories</th>
                         <th className="pb-2 pr-4">Price</th>
                         <th className="pb-2 pr-4">Stock</th>
                         <th className="pb-2 pr-4">Actions</th>
@@ -468,6 +548,22 @@ export default function AdminBooks(): React.ReactElement {
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
                             {book.author_name}
+                          </td>
+                          <td className="py-2 pr-4 text-zinc-700">
+                            {book.categories && book.categories.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {book.categories.map((category) => (
+                                  <span
+                                    key={category.id}
+                                    className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 ring-1 ring-orange-200"
+                                  >
+                                    {category.name}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-zinc-500">No categories</span>
+                            )}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
                             {formatPrice(book.price)}
@@ -729,6 +825,73 @@ export default function AdminBooks(): React.ReactElement {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {tab === 'categories' && (
+            <>
+              <form
+                onSubmit={onSubmitCategory}
+                className="grid gap-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200 md:grid-cols-[1fr_auto_auto]"
+              >
+                <input
+                  required
+                  value={categoryName}
+                  onChange={(event) => setCategoryName(event.target.value)}
+                  placeholder="Category name"
+                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                >
+                  {saving
+                    ? 'Saving...'
+                    : editingCategoryId
+                      ? 'Update Category'
+                      : 'Create Category'}
+                </button>
+                {editingCategoryId && (
+                  <button
+                    type="button"
+                    className="rounded-md border border-zinc-300 px-4 py-2 text-sm"
+                    onClick={resetCategoryForm}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </form>
+
+              <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
+                <h2 className="text-lg font-semibold text-zinc-900">Categories</h2>
+                <div className="mt-3 space-y-2">
+                  {categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="flex items-center justify-between rounded-md border border-zinc-200 px-3 py-2"
+                    >
+                      <span className="text-sm text-zinc-800">{category.name}</span>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="rounded-md bg-zinc-900 px-2 py-1 text-xs text-white"
+                          onClick={() => startEditCategory(category)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
+                          onClick={() => void onDeleteCategory(category.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </>

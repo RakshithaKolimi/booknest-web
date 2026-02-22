@@ -1,28 +1,25 @@
 import {
+  AdminBooks,
+  AdminOrders,
+  BookDetail,
+  Books,
+  Cart,
   ForgotPassword,
+  Home,
   Login,
+  NotFound,
+  Orders,
+  Profile,
   Register,
   ResetSuccessful,
   UnAuthorized,
 } from '@booknest/pages'
+import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
 import { Header } from '@booknest/ui'
+import { clearAuthSession, getRole } from '@booknest/utils'
 import React from 'react'
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-
-import AdminBooks from './Pages/AdminBooks'
-import AdminOrders from './Pages/AdminOrders'
-import BookDetail from './Pages/BookDetail'
-import Books from './Pages/Books'
-import Cart from './Pages/Cart'
-import Home from './Pages/Home'
-import NotFound from './Pages/NotFound'
-import Orders from './Pages/Orders'
-import Profile from './Pages/Profile'
-import PrivateRoute from './routes/PrivateRoute'
-import PublicRoute from './routes/PublicRoute'
-import RoleBasedRoute from './routes/RoleBasedRoutes'
 import { Logout } from '@booknest/ui'
-import { clearAuthSession, getRole } from './utils/auth'
 
 export default function App() {
   const location = useLocation()

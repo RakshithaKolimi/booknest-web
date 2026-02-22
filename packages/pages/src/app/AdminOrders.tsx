@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react'
 
-import { listAllOrders, type OrderView } from '../services/orderService'
+import { listAllOrders, type OrderView } from '@booknest/services/orderService'
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value)
-}
+import { formatPrice } from '@booknest/utils'
 
 export default function AdminOrders(): React.ReactElement {
   const [orders, setOrders] = useState<OrderView[]>([])

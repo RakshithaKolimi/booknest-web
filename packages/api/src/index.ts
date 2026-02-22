@@ -1,1 +1,8 @@
 export * as AuthService from './AuthService/AuthService'
+export { default as client } from './client'
+export * from './authorService'
+export * from './bookService'
+export * from './cartService'
+export * from './categoryService'
+export * from './orderService'
+export * from './publisherService'

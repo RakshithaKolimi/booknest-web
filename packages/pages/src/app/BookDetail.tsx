@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { addToCart } from '../services/cartService'
-import { type Book, getBookById } from '../services/bookService'
-import { getRole } from '../utils/auth'
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-  }).format(price)
-}
+import { addToCart } from '@booknest/services/cartService'
+import { type Book, getBookById } from '@booknest/services/bookService'
+import { getRole } from '@booknest/utils'
+import { formatPrice } from '@booknest/utils'
 
 export default function BookDetail(): React.ReactElement {
   const { id } = useParams<{ id: string }>()
@@ -111,6 +105,18 @@ export default function BookDetail(): React.ReactElement {
         <div>
           <h1 className="text-3xl font-semibold text-zinc-900">{book.name}</h1>
           <p className="mt-1 text-zinc-600">by {book.author_name}</p>
+          {book.categories && book.categories.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {book.categories.map((category) => (
+                <span
+                  key={category.id}
+                  className="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-800 ring-1 ring-orange-200"
+                >
+                  {category.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
             <span className="rounded-md bg-zinc-100 px-3 py-1 text-zinc-700">

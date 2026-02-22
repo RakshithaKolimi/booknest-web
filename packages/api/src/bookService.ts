@@ -1,5 +1,10 @@
 import client from './client'
 
+export type BookCategory = {
+  id: string
+  name: string
+}
+
 export type Book = {
   id: string
   name: string
@@ -13,6 +18,7 @@ export type Book = {
   price: number
   discount_percentage: number
   publisher_id: string
+  categories?: BookCategory[]
   created_at: string
   updated_at: string
 }

@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source "../../../packages/pages/src/**/*.{ts,tsx,js,jsx}";
+@source "../../../packages/ui/src/**/*.{ts,tsx,js,jsx}";
+@source "../../../packages/ui-helpers/src/**/*.{ts,tsx,js,jsx}";
 
 :root {
   --ink-900: #1f2937;

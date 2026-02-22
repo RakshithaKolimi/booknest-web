@@ -14,6 +14,7 @@
     "@booknest/ui": "workspace:*",
     "@booknest/utils": "workspace:*",
     "@booknest/pages": "workspace:*",
+    "@booknest/ui-helpers": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.12.0"

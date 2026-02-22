@@ -19,9 +19,15 @@
     "baseUrl": ".",
     "paths": {
       "@booknest/ui": ["packages/ui/src"],
-      "@booknest/services": ["packages/services/src"],
+      "@booknest/ui/*": ["packages/ui/src/*"],
+      "@booknest/services": ["packages/api/src"],
+      "@booknest/services/*": ["packages/api/src/*"],
       "@booknest/utils": ["packages/utils/src"],
-      "@booknest/pages": ["packages/pages/src"]
+      "@booknest/utils/*": ["packages/utils/src/*"],
+      "@booknest/pages": ["packages/pages/src"],
+      "@booknest/pages/*": ["packages/pages/src/*"],
+      "@booknest/ui-helpers": ["packages/ui-helpers/src"],
+      "@booknest/ui-helpers/*": ["packages/ui-helpers/src/*"]
     }
   }
 }

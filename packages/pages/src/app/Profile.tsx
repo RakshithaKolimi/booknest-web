@@ -2,7 +2,7 @@ import { safeLocalStorage } from '@booknest/utils'
 import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-import { getRole } from '../utils/auth'
+import { getRole } from '@booknest/utils'
 
 export default function Profile(): React.ReactElement {
   useEffect(() => {

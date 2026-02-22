@@ -15,7 +15,8 @@ export default defineConfig({
       '@booknest/ui': path.resolve(__dirname, '../../packages/ui/src'),
       '@booknest/utils': path.resolve(__dirname, '../../packages/utils/src'),
       '@booknest/pages': path.resolve(__dirname, '../../packages/pages/src'),
-      '@booknest/api': path.resolve(__dirname, '../../packages/api/src'),
+      '@booknest/services': path.resolve(__dirname, '../../packages/api/src'),
+      '@booknest/ui-helpers': path.resolve(__dirname, '../../packages/ui-helpers/src'),
     },
   },
   server: {

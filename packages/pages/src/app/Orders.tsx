@@ -4,14 +4,9 @@ import {
   confirmPayment,
   listMyOrders,
   type OrderView,
-} from '../services/orderService'
+} from '@booknest/services/orderService'
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value)
-}
+import { formatPrice } from '@booknest/utils'
 
 export default function Orders(): React.ReactElement {
   const [orders, setOrders] = useState<OrderView[]>([])

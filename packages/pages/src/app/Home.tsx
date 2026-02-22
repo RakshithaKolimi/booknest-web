@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
-import { getRole } from '../utils/auth'
+import { getRole } from '@booknest/utils'
 
 export default function Home(): React.ReactElement {
   const role = getRole()

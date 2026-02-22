@@ -2,7 +2,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { getRole } from '../utils/auth'
+import { getRole } from '@booknest/utils'
 
 interface RoleBasedRouteProps {
   element: React.ReactElement

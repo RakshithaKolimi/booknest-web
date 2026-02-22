@@ -1,16 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { addToCart } from '../services/cartService'
-import { type Book, listBooks } from '../services/bookService'
-import { getRole } from '../utils/auth'
+import { addToCart } from '@booknest/services/cartService'
+import { type Book, listBooks } from '@booknest/services/bookService'
+import { getRole } from '@booknest/utils'
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-  }).format(price)
-}
+import { formatPrice } from '@booknest/utils'
 
 export default function Books(): React.ReactElement {
   const role = getRole()
@@ -132,6 +127,18 @@ export default function Books(): React.ReactElement {
 
               <h2 className="text-lg font-semibold text-zinc-900">{book.name}</h2>
               <p className="text-sm text-zinc-600">{book.author_name}</p>
+              {book.categories && book.categories.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {book.categories.map((category) => (
+                    <span
+                      key={category.id}
+                      className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 ring-1 ring-orange-200"
+                    >
+                      {category.name}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="mt-3 flex items-center justify-between text-sm">
                 <span className="font-semibold text-zinc-900">

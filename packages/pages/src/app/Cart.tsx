@@ -7,20 +7,15 @@ import {
   removeCartItem,
   type CartView,
   updateCartItem,
-} from '../services/cartService'
+} from '@booknest/services/cartService'
 import {
   checkout,
   confirmPayment,
   type OrderView,
   type PaymentMethod,
-} from '../services/orderService'
+} from '@booknest/services/orderService'
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value)
-}
+import { formatPrice } from '@booknest/utils'
 
 const paymentMethods: PaymentMethod[] = [
   'COD',
