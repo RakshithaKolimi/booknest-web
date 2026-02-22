@@ -1,36 +1,67 @@
 # BookNest Web
 
-A small React + TypeScript frontend for the BookNest backend.
+Frontend monorepo for BookNest (React + TypeScript + Vite + pnpm + Turbo).
 
-Setup
+## Workspace Structure
 
-1. Install dependencies
+- `apps/web`: main web app (routing, app shell)
+- `packages/api`: typed API client/services
+- `packages/pages`: page-level UI
+- `packages/ui`: shared UI components/icons
+- `packages/ui-helpers`: route guards (`PrivateRoute`, `PublicRoute`, `RoleBasedRoute`)
+- `packages/utils`: shared auth/currency/storage helpers
 
-   npm install
+## Prerequisites
 
-2. Copy environment variables
+- Node.js 18+
+- pnpm 9+
+- BookNest backend running at `http://localhost:8080`
 
+## Environment
+
+1. Copy env:
+
+   ```bash
    cp .env.example .env
+   ```
 
-3. Start dev server
+2. Confirm API base URL:
 
-   npm run dev
+   ```env
+   VITE_API_BASE=http://localhost:8080
+   ```
 
-Environment
+## Run (Interview-Safe)
 
-- VITE_API_BASE: base URL of BookNest backend (default http://localhost:8080)
+From this folder:
 
-Notes
+```bash
+pnpm install
+pnpm dev
+```
 
-This project was scaffolded to interface with the BookNest-Platform backend. Adjust API paths in `src/services/api.ts` if your backend uses different routes.
+- App opens at `http://localhost:3000`
 
-Backend routes and CORS
+## Quality Checks
 
-- This frontend expects the BookNest-Platform backend routes:
-  - GET /books -> list books
-  - GET /book/:id -> get single book
-  - POST /books -> create book
-  - PUT /book/:id -> update book
-  - DELETE /book/:id -> delete book
+From this folder:
 
-- Make sure the backend enables CORS for the frontend origin (or use a permissive CORS during local development) so the browser can call the API.
+```bash
+pnpm lint
+pnpm test
+pnpm build
+```
+
+## Route + API Expectations
+
+This frontend calls these backend routes:
+
+- Auth: `POST /register`, `POST /login`, `POST /forgot-password`
+- Books: `GET /books`, `GET /books/:id`, `POST|PUT|DELETE /books/:id?`
+- Cart: `GET /cart`, `POST|PUT /cart/items`, `DELETE /cart/items/:book_id`, `POST /cart/clear`
+- Orders: `POST /orders/checkout`, `POST /orders/confirm`, `GET /orders`, `GET /admin/orders`
+- Admin catalog: `/authors`, `/categories`, `/publishers`
+
+## Demo Accounts
+
+Use the backend seed/setup data for one `ADMIN` and one `USER` account before interview.

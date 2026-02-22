@@ -36,12 +36,16 @@ export default function ForgotPassword(): React.ReactElement {
     try {
       setLoading(true)
 
-      await AuthService.forgotPassword({
+      const response = await AuthService.forgotPassword({
         email: formData.email.trim(),
       })
 
       toast.success('Password Reset Link Sent!')
-      navigate('/reset-successful')
+      if (response.reset_token) {
+        navigate(`/reset-password?token=${encodeURIComponent(response.reset_token)}`)
+      } else {
+        navigate('/reset-successful')
+      }
     } catch (err: any) {
       toast.error('Forgot password failed. Please try again.')
     } finally {
@@ -77,7 +81,12 @@ export default function ForgotPassword(): React.ReactElement {
               Login
             </Link>
           </p>
-          <Button label="Send Reset Link" className="btn-login" type="submit" />
+          <Button
+            label={loading ? 'Sending...' : 'Send Reset Link'}
+            className="btn-login"
+            type="submit"
+            disabled={loading}
+          />
         </form>
       </div>
       <Toaster />

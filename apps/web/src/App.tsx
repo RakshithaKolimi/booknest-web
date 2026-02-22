@@ -11,6 +11,7 @@ import {
   Orders,
   Profile,
   Register,
+  ResetPassword,
   ResetSuccessful,
   UnAuthorized,
 } from '@booknest/pages'
@@ -29,6 +30,7 @@ export default function App() {
     location.pathname === '/login' ||
     location.pathname === '/register' ||
     location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password' ||
     location.pathname === '/reset-successful'
 
   const navigate = useNavigate()
@@ -105,6 +107,10 @@ export default function App() {
             <Route
               path="/reset-successful"
               element={<PublicRoute element={<ResetSuccessful />} />}
+            />
+            <Route
+              path="/reset-password"
+              element={<PublicRoute element={<ResetPassword />} />}
             />
 
             <Route path="/" element={<PrivateRoute element={<Home />} />} />

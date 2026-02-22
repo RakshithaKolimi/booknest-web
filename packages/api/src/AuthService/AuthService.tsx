@@ -25,6 +25,11 @@ export type IForgotPasswordInput = {
   mobile?: string
 }
 
+export type IForgotPasswordResponse = {
+  message: string
+  reset_token?: string
+}
+
 export type ILoginResponse = {
   message: string
   token: string
@@ -32,8 +37,18 @@ export type ILoginResponse = {
 
 export async function forgotPassword(
   input: IForgotPasswordInput
-): Promise<string> {
-  return postData<string, IForgotPasswordInput>('/forgot-password', input)
+): Promise<IForgotPasswordResponse> {
+  return postData<IForgotPasswordResponse, IForgotPasswordInput>('/forgot-password', input)
+}
+
+export async function resetPasswordWithToken(
+  token: string,
+  new_password: string
+): Promise<{ message: string }> {
+  return postData<{ message: string }, { token: string; new_password: string }>(
+    '/reset-password/confirm',
+    { token, new_password }
+  )
 }
 
 export async function register(

@@ -8,14 +8,41 @@ import importPlugin from 'eslint-plugin-import'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import prettierPlugin from 'eslint-plugin-prettier'
 
+const browserGlobals = {
+  window: 'readonly',
+  document: 'readonly',
+  navigator: 'readonly',
+  location: 'readonly',
+  localStorage: 'readonly',
+  sessionStorage: 'readonly',
+  fetch: 'readonly',
+  URL: 'readonly',
+  URLSearchParams: 'readonly',
+  FormData: 'readonly',
+  Request: 'readonly',
+  Response: 'readonly',
+  Headers: 'readonly',
+  Blob: 'readonly',
+  File: 'readonly',
+  HTMLElement: 'readonly',
+  HTMLInputElement: 'readonly',
+  HTMLTextAreaElement: 'readonly',
+  KeyboardEvent: 'readonly',
+  Event: 'readonly',
+  Node: 'readonly',
+  atob: 'readonly',
+  btoa: 'readonly',
+  setTimeout: 'readonly',
+  clearTimeout: 'readonly',
+}
+
 export default [
-  // ✅ Include JS recommended config with browser globals
   {
     ...js.configs.recommended,
     languageOptions: {
       globals: {
-        ...js.environments.browser.globals, // 👈 adds DOM globals like HTMLInputElement
-        ...js.environments.es2021.globals,
+        ...browserGlobals,
+        console: 'readonly',
         process: 'readonly',
         module: 'readonly',
         require: 'readonly',
@@ -45,7 +72,6 @@ export default [
       ...jsxA11y.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
 
-      // ✅ common project rules
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
