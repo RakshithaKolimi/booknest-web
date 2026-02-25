@@ -1,14 +1,15 @@
 import { render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import type { ReactElement } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { afterEach, describe, expect, it } from 'vitest'
 
-import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
+import { PrivateRoute, PublicRoute, RoleBasedRoute } from './index'
 
 afterEach(() => {
   window.localStorage.clear()
 })
 
-function renderRoutes(element: JSX.Element, path: string) {
+function renderRoutes(element: ReactElement, path: string) {
   render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>

@@ -5,7 +5,7 @@ import {
   decodeToken,
   getRole,
   syncAuthSession,
-} from '@booknest/utils'
+} from './auth'
 
 const adminToken =
   'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VyX2lkIjoidTEiLCJlbWFpbCI6ImFAYi5jb20iLCJ1c2VyX3JvbGUiOiJBRE1JTiJ9.signature'

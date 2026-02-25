@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatPrice } from '@booknest/utils'
+import { formatPrice } from './currency'
 
 describe('formatPrice', () => {
   it('formats INR currency with grouping', () => {

@@ -14,7 +14,7 @@ vi.mock('@booknest/services/client', () => ({
   default: mockClient,
 }))
 
-import { deleteData, getData, postData, putData } from '@booknest/services'
+import { deleteData, getData, postData, putData } from './request'
 
 describe('request helpers', () => {
   beforeEach(() => {
