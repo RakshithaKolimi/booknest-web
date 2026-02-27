@@ -39,10 +39,13 @@ export default function Books(): React.ReactElement {
     if (!keyword) return books
 
     return books.filter((book) => {
+      const title = (book.name || '').toLowerCase()
+      const author = (book.author_name || '').toLowerCase()
+      const isbn = (book.isbn || '').toLowerCase()
       return (
-        book.name.toLowerCase().includes(keyword) ||
-        book.author_name.toLowerCase().includes(keyword) ||
-        (book.isbn || '').toLowerCase().includes(keyword)
+        title.includes(keyword) ||
+        author.includes(keyword) ||
+        isbn.includes(keyword)
       )
     })
   }, [books, search])
@@ -125,8 +128,8 @@ export default function Books(): React.ReactElement {
                 )}
               </div>
 
-              <h2 className="text-lg font-semibold text-zinc-900">{book.name}</h2>
-              <p className="text-sm text-zinc-600">{book.author_name}</p>
+              <h2 className="text-lg font-semibold text-zinc-900">{book.name || 'Untitled'}</h2>
+              <p className="text-sm text-zinc-600">{book.author_name || 'Unknown author'}</p>
               {book.categories && book.categories.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {book.categories.map((category) => (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import {
   createAuthor,
@@ -79,8 +79,12 @@ export default function AdminBooks(): React.ReactElement {
 
   const [bookForm, setBookForm] = useState(initialBookForm)
   const [authorName, setAuthorName] = useState('')
+  const [bookSearch, setBookSearch] = useState('')
+  const [publisherName, setPublisherName] = useState('')
   const [publisherForm, setPublisherForm] = useState(initialPublisherForm)
   const [categoryName, setCategoryName] = useState('')
+  const [authorSearch, setAuthorSearch] = useState('')
+  const [publisherSearch, setPublisherSearch] = useState('')
 
   const loadAll = async () => {
     setLoading(true)
@@ -88,8 +92,12 @@ export default function AdminBooks(): React.ReactElement {
     try {
       const [bookData, authorData, publisherData, categoryData] = await Promise.all([
         listBooks(),
-        listAuthors(),
-        listPublishers(),
+        listAuthors({
+          limit: 500,
+        }),
+        listPublishers({
+          limit: 500,
+        }),
         listCategories(),
       ])
       setBooks(bookData)
@@ -108,8 +116,43 @@ export default function AdminBooks(): React.ReactElement {
     void loadAll()
   }, [])
 
+  const filteredAuthors = useMemo(() => {
+    const keyword = authorSearch.trim().toLowerCase()
+    if (!keyword) return authors
+    return authors.filter((author) => author.name.toLowerCase().includes(keyword))
+  }, [authors, authorSearch])
+
+  const filteredPublishers = useMemo(() => {
+    const keyword = publisherSearch.trim().toLowerCase()
+    if (!keyword) return publishers
+    return publishers.filter((publisher) => {
+      return (
+        publisher.trading_name.toLowerCase().includes(keyword) ||
+        publisher.legal_name.toLowerCase().includes(keyword)
+      )
+    })
+  }, [publishers, publisherSearch])
+
+  const authorNameById = useMemo(() => {
+    return new Map(authors.map((author) => [author.id, author.name]))
+  }, [authors])
+
+  const filteredBooks = useMemo(() => {
+    const keyword = bookSearch.trim().toLowerCase()
+    if (!keyword) return books
+    return books.filter((book) => {
+      const authorName = (book.author_name || authorNameById.get(book.author_id) || '').toLowerCase()
+      return (
+        book.name.toLowerCase().includes(keyword) ||
+        authorName.includes(keyword) ||
+        (book.isbn || '').toLowerCase().includes(keyword)
+      )
+    })
+  }, [books, bookSearch, authorNameById])
+
   const resetBookForm = () => {
     setBookForm(initialBookForm)
+    setPublisherName('')
     setEditingBookId('')
   }
 
@@ -130,11 +173,26 @@ export default function AdminBooks(): React.ReactElement {
 
   const onSubmitBook = async (event: React.FormEvent) => {
     event.preventDefault()
-    const selectedAuthor = authors.find(
-      (author) => author.id === (bookForm.author_id || '')
-    )
+    const selectedAuthor =
+      authors.find((author) => author.id === (bookForm.author_id || '')) ||
+      authors.find(
+        (author) =>
+          author.name.trim().toLowerCase() ===
+          (bookForm.author_name || '').trim().toLowerCase()
+      )
     if (!selectedAuthor) {
       setError('Please select an author')
+      return
+    }
+    const selectedPublisher =
+      publishers.find((publisher) => publisher.id === bookForm.publisher_id) ||
+      publishers.find(
+        (publisher) =>
+          publisher.trading_name.trim().toLowerCase() ===
+          publisherName.trim().toLowerCase()
+      )
+    if (!selectedPublisher) {
+      setError('Please select a publisher')
       return
     }
 
@@ -145,6 +203,7 @@ export default function AdminBooks(): React.ReactElement {
         ...bookForm,
         author_id: selectedAuthor.id,
         author_name: selectedAuthor.name,
+        publisher_id: selectedPublisher.id,
         category_ids: bookForm.category_ids || [],
         image_url: bookForm.image_url || undefined,
         isbn: bookForm.isbn || undefined,
@@ -269,11 +328,15 @@ export default function AdminBooks(): React.ReactElement {
   }
 
   const startEditBook = (book: Book) => {
+    const selectedPublisher = publishers.find(
+      (publisher) => publisher.id === book.publisher_id
+    )
+    const resolvedAuthorName = book.author_name || authorNameById.get(book.author_id) || ''
     setTab('books')
     setEditingBookId(book.id)
     setBookForm({
       name: book.name,
-      author_name: book.author_name,
+      author_name: resolvedAuthorName,
       author_id: book.author_id,
       available_stock: book.available_stock,
       image_url: book.image_url || '',
@@ -285,6 +348,7 @@ export default function AdminBooks(): React.ReactElement {
       publisher_id: book.publisher_id,
       category_ids: book.categories?.map((category) => category.id) || [],
     })
+    setPublisherName(selectedPublisher?.trading_name || '')
   }
 
   const startEditAuthor = (author: Author) => {
@@ -382,40 +446,48 @@ export default function AdminBooks(): React.ReactElement {
                   placeholder="Book name"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 />
-                <select
+                <input
                   required
-                  value={bookForm.author_id || ''}
+                  list="author-options"
+                  value={bookForm.author_name || ''}
                   onChange={(event) => {
+                    const value = event.target.value
                     const selected = authors.find(
-                      (author) => author.id === event.target.value
+                      (author) =>
+                        author.name.trim().toLowerCase() ===
+                        value.trim().toLowerCase()
                     )
                     setBookForm({
                       ...bookForm,
-                      author_id: event.target.value,
-                      author_name: selected?.name || '',
+                      author_id: selected?.id || '',
+                      author_name: value,
                     })
                   }}
-                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                >
-                  <option value="">Select author</option>
-                  {authors.map((author) => (
-                    <option key={author.id} value={author.id}>
-                      {author.name}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  required
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={bookForm.price}
-                  onChange={(event) =>
-                    setBookForm({ ...bookForm, price: Number(event.target.value) })
-                  }
-                  placeholder="Price"
+                  placeholder="Author"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 />
+                <datalist id="author-options">
+                  {authors.map((author) => (
+                    <option key={author.id} value={author.name} />
+                  ))}
+                </datalist>
+                <div className="relative">
+                  <input
+                    required
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={bookForm.price}
+                    onChange={(event) =>
+                      setBookForm({ ...bookForm, price: Number(event.target.value) })
+                    }
+                    placeholder="Price"
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 pr-9 text-sm"
+                  />
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-zinc-500">
+                    ₹
+                  </span>
+                </div>
                 <input
                   required
                   type="number"
@@ -430,44 +502,72 @@ export default function AdminBooks(): React.ReactElement {
                   placeholder="Stock"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 />
-                <select
-                  multiple
-                  value={bookForm.category_ids || []}
+                <div className="md:col-span-2">
+                  <p className="mb-2 text-sm font-medium text-zinc-700">Categories</p>
+                  <div className="flex flex-wrap gap-2 rounded-md border border-zinc-300 p-2">
+                    {categories.map((category) => {
+                      const isSelected = Boolean(
+                        bookForm.category_ids?.includes(category.id)
+                      )
+                      return (
+                        <button
+                          key={category.id}
+                          type="button"
+                          onClick={() => {
+                            const currentCategoryIDs = bookForm.category_ids || []
+                            const updatedCategoryIDs = isSelected
+                              ? currentCategoryIDs.filter(
+                                  (categoryID) => categoryID !== category.id
+                                )
+                              : [...currentCategoryIDs, category.id]
+                            setBookForm({
+                              ...bookForm,
+                              category_ids: updatedCategoryIDs,
+                            })
+                          }}
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium ring-1 transition ${
+                            isSelected
+                              ? 'bg-orange-100 text-orange-800 ring-orange-200'
+                              : 'bg-zinc-100 text-zinc-700 ring-zinc-200 hover:bg-zinc-200'
+                          }`}
+                          aria-pressed={isSelected}
+                        >
+                          {category.name}
+                        </button>
+                      )
+                    })}
+                    {categories.length === 0 && (
+                      <span className="text-xs text-zinc-500">
+                        Add categories first to assign them to books.
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <input
+                  required
+                  list="publisher-options"
+                  value={publisherName}
                   onChange={(event) => {
-                    const selectedCategoryIDs = Array.from(
-                      event.target.selectedOptions
-                    ).map((option) => option.value)
+                    const value = event.target.value
+                    const selected = publishers.find(
+                      (publisher) =>
+                        publisher.trading_name.trim().toLowerCase() ===
+                        value.trim().toLowerCase()
+                    )
+                    setPublisherName(value)
                     setBookForm({
                       ...bookForm,
-                      category_ids: selectedCategoryIDs,
+                      publisher_id: selected?.id || '',
                     })
                   }}
-                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
-                >
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-zinc-500 md:col-span-2">
-                  Hold Ctrl/Command to select multiple categories.
-                </p>
-                <select
-                  required
-                  value={bookForm.publisher_id}
-                  onChange={(event) =>
-                    setBookForm({ ...bookForm, publisher_id: event.target.value })
-                  }
+                  placeholder="Publisher"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                >
-                  <option value="">Select publisher</option>
+                />
+                <datalist id="publisher-options">
                   {publishers.map((publisher) => (
-                    <option key={publisher.id} value={publisher.id}>
-                      {publisher.trading_name}
-                    </option>
+                    <option key={publisher.id} value={publisher.trading_name} />
                   ))}
-                </select>
+                </datalist>
                 <input
                   value={bookForm.isbn || ''}
                   onChange={(event) =>
@@ -528,6 +628,12 @@ export default function AdminBooks(): React.ReactElement {
 
               <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
                 <h2 className="text-lg font-semibold text-zinc-900">Books</h2>
+                <input
+                  value={bookSearch}
+                  onChange={(event) => setBookSearch(event.target.value)}
+                  placeholder="Search books by title, author, or ISBN"
+                  className="mt-3 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                />
                 <div className="mt-3 overflow-x-auto">
                   <table className="min-w-full text-left text-sm">
                     <thead className="text-xs uppercase tracking-wide text-zinc-500">
@@ -541,13 +647,13 @@ export default function AdminBooks(): React.ReactElement {
                       </tr>
                     </thead>
                     <tbody>
-                      {books.map((book) => (
+                      {filteredBooks.map((book) => (
                         <tr key={book.id} className="border-t border-zinc-100">
                           <td className="py-2 pr-4 font-medium text-zinc-900">
                             {book.name}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
-                            {book.author_name}
+                            {book.author_name || authorNameById.get(book.author_id) || '-'}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
                             {book.categories && book.categories.length > 0 ? (
@@ -635,8 +741,14 @@ export default function AdminBooks(): React.ReactElement {
 
               <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
                 <h2 className="text-lg font-semibold text-zinc-900">Authors</h2>
+                <input
+                  value={authorSearch}
+                  onChange={(event) => setAuthorSearch(event.target.value)}
+                  placeholder="Search authors by name"
+                  className="mt-3 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                />
                 <div className="mt-3 space-y-2">
-                  {authors.map((author) => (
+                  {filteredAuthors.map((author) => (
                     <div
                       key={author.id}
                       className="flex items-center justify-between rounded-md border border-zinc-200 px-3 py-2"
@@ -785,6 +897,12 @@ export default function AdminBooks(): React.ReactElement {
 
               <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
                 <h2 className="text-lg font-semibold text-zinc-900">Publishers</h2>
+                <input
+                  value={publisherSearch}
+                  onChange={(event) => setPublisherSearch(event.target.value)}
+                  placeholder="Search publishers by name"
+                  className="mt-3 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                />
                 <div className="mt-3 overflow-x-auto">
                   <table className="min-w-full text-left text-sm">
                     <thead className="text-xs uppercase tracking-wide text-zinc-500">
@@ -796,7 +914,7 @@ export default function AdminBooks(): React.ReactElement {
                       </tr>
                     </thead>
                     <tbody>
-                      {publishers.map((publisher) => (
+                      {filteredPublishers.map((publisher) => (
                         <tr key={publisher.id} className="border-t border-zinc-100">
                           <td className="py-2 pr-4 font-medium text-zinc-900">
                             {publisher.trading_name}

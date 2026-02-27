@@ -28,8 +28,14 @@ export type PublisherInput = {
   zipcode: string
 }
 
-export async function listPublishers(): Promise<Publisher[]> {
-  return getData<Publisher[]>('/publishers')
+export type ListPublishersParams = {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
+export async function listPublishers(params?: ListPublishersParams): Promise<Publisher[]> {
+  return getData<Publisher[]>('/publishers', { params })
 }
 
 export async function createPublisher(payload: PublisherInput): Promise<Publisher> {

@@ -11,8 +11,14 @@ export type AuthorInput = {
   name: string
 }
 
-export async function listAuthors(): Promise<Author[]> {
-  return getData<Author[]>('/authors')
+export type ListAuthorsParams = {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
+export async function listAuthors(params?: ListAuthorsParams): Promise<Author[]> {
+  return getData<Author[]>('/authors', { params })
 }
 
 export async function createAuthor(payload: AuthorInput): Promise<Author> {
