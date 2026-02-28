@@ -32,7 +32,8 @@ export type IForgotPasswordResponse = {
 
 export type ILoginResponse = {
   message: string
-  token: string
+  access_token: string
+  refresh_token: string
 }
 
 export async function forgotPassword(

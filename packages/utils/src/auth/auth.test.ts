@@ -5,6 +5,7 @@ import {
   decodeToken,
   getRole,
   syncAuthSession,
+  syncAuthSessionWithRefresh,
 } from './auth'
 
 const adminToken =
@@ -31,9 +32,10 @@ describe('auth utils', () => {
   })
 
   it('syncs and clears auth session in localStorage', () => {
-    syncAuthSession(userToken)
+    syncAuthSessionWithRefresh(userToken, 'refresh-token-1')
 
     expect(window.localStorage.getItem('token')).toBe(userToken)
+    expect(window.localStorage.getItem('refresh_token')).toBe('refresh-token-1')
     expect(window.localStorage.getItem('role')).toBe('USER')
     expect(window.localStorage.getItem('user_id')).toBe('u2')
     expect(window.localStorage.getItem('email')).toBe('u@b.com')
@@ -41,9 +43,16 @@ describe('auth utils', () => {
     clearAuthSession()
 
     expect(window.localStorage.getItem('token')).toBeNull()
+    expect(window.localStorage.getItem('refresh_token')).toBeNull()
     expect(window.localStorage.getItem('role')).toBeNull()
     expect(window.localStorage.getItem('user_id')).toBeNull()
     expect(window.localStorage.getItem('email')).toBeNull()
+  })
+
+  it('syncAuthSession keeps backward compatibility without refresh token', () => {
+    syncAuthSession(userToken)
+    expect(window.localStorage.getItem('token')).toBe(userToken)
+    expect(window.localStorage.getItem('refresh_token')).toBeNull()
   })
 
   it('getRole prefers stored role and falls back to token claims', () => {

@@ -16,6 +16,67 @@ const client = axios.create({
   withCredentials: true,
 })
 
+const refreshClient = axios.create({
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+})
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean
+}
+
+let refreshPromise: Promise<string> | null = null
+
+function forceLogout(): void {
+  clearAuthSession()
+  if (window.location.pathname !== '/login') {
+    window.location.assign('/login')
+  }
+}
+
+function isRefreshRequest(url?: string): boolean {
+  return url?.includes('/refresh') === true
+}
+
+async function requestNewAccessToken(): Promise<string> {
+  const refreshToken = safeLocalStorage.get('refresh_token')
+  if (!refreshToken) {
+    throw new Error('missing refresh token')
+  }
+
+  try {
+    const response = await refreshClient.post<{ access_token: string }>(
+      '/auth/refresh',
+      { refresh_token: refreshToken }
+    )
+
+    if (!response.data?.access_token) {
+      throw new Error('missing access token in refresh response')
+    }
+
+    safeLocalStorage.set('token', response.data.access_token)
+    return response.data.access_token
+  } catch (error) {
+    const axiosError = error as AxiosError
+    if (axiosError.response?.status === 404) {
+      // Backward compatibility for environments still exposing /refresh.
+      const fallbackResponse = await refreshClient.post<{ access_token: string }>(
+        '/refresh',
+        { refresh_token: refreshToken }
+      )
+      if (!fallbackResponse.data?.access_token) {
+        throw new Error('missing access token in refresh response')
+      }
+      safeLocalStorage.set('token', fallbackResponse.data.access_token)
+      return fallbackResponse.data.access_token
+    }
+    throw error
+  }
+}
+
 client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = safeLocalStorage.get('token')
   if (token) {
@@ -28,20 +89,36 @@ client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 // When JWT Token expires, navigate user to login screen
 client.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     const status = error.response?.status
-    const sentBearerToken = Boolean(
-      (error.config?.headers as Record<string, unknown> | undefined)?.Authorization
-    )
+    const originalRequest = error.config as RetryableRequestConfig | undefined
+    const sentBearerToken = Boolean(originalRequest?.headers?.Authorization)
+    const shouldAttemptRefresh =
+      status === 401 &&
+      sentBearerToken &&
+      !originalRequest?._retry &&
+      !isRefreshRequest(originalRequest?.url)
 
-    if (status === 401 && sentBearerToken) {
-      clearAuthSession()
-      if (window.location.pathname !== '/login') {
-        window.location.assign('/login')
-      }
+    if (!shouldAttemptRefresh || !originalRequest) {
+      return Promise.reject(error)
     }
 
-    return Promise.reject(error)
+    try {
+      originalRequest._retry = true
+
+      if (!refreshPromise) {
+        refreshPromise = requestNewAccessToken().finally(() => {
+          refreshPromise = null
+        })
+      }
+
+      const newAccessToken = await refreshPromise
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+      return client(originalRequest)
+    } catch {
+      forceLogout()
+      return Promise.reject(error)
+    }
   }
 )
 

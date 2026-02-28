@@ -46,8 +46,17 @@ export function syncAuthSession(token: string): void {
   }
 }
 
+export function syncAuthSessionWithRefresh(
+  accessToken: string,
+  refreshToken: string
+): void {
+  syncAuthSession(accessToken)
+  safeLocalStorage.set('refresh_token', refreshToken)
+}
+
 export function clearAuthSession(): void {
   safeLocalStorage.remove('token')
+  safeLocalStorage.remove('refresh_token')
   safeLocalStorage.remove('role')
   safeLocalStorage.remove('user_id')
   safeLocalStorage.remove('email')
