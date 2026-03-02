@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { toast, Toaster } from 'react-hot-toast'
 
 import { addToCart } from '@booknest/services/cartService'
 import { type Book, getBookById } from '@booknest/services/bookService'
@@ -47,6 +48,7 @@ export default function BookDetail(): React.ReactElement {
 
     try {
       await addToCart(book.id, quantity)
+      toast.success('Book added to cart successfully')
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Unable to add selected quantity')
     } finally {
@@ -77,6 +79,7 @@ export default function BookDetail(): React.ReactElement {
 
   return (
     <section className="space-y-5">
+      <Toaster />
       <Link to="/books" className="text-sm font-semibold text-zinc-700 underline">
         Back to books
       </Link>

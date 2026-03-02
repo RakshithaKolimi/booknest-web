@@ -141,7 +141,7 @@ export default function AdminBooks(): React.ReactElement {
     const keyword = bookSearch.trim().toLowerCase()
     if (!keyword) return books
     return books.filter((book) => {
-      const authorName = (book.author_name || authorNameById.get(book.author_id) || '').toLowerCase()
+      const authorName = (book?.author?.name || authorNameById.get(book.author_id) || '').toLowerCase()
       return (
         book.name.toLowerCase().includes(keyword) ||
         authorName.includes(keyword) ||
@@ -331,7 +331,7 @@ export default function AdminBooks(): React.ReactElement {
     const selectedPublisher = publishers.find(
       (publisher) => publisher.id === book.publisher_id
     )
-    const resolvedAuthorName = book.author_name || authorNameById.get(book.author_id) || ''
+    const resolvedAuthorName = book?.author?.name || authorNameById.get(book.author_id) || ''
     setTab('books')
     setEditingBookId(book.id)
     setBookForm({
@@ -653,7 +653,7 @@ export default function AdminBooks(): React.ReactElement {
                             {book.name}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
-                            {book.author_name || authorNameById.get(book.author_id) || '-'}
+                            {book?.author?.name || authorNameById.get(book.author_id) || '-'}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
                             {book.categories && book.categories.length > 0 ? (

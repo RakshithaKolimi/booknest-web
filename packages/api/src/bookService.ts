@@ -5,11 +5,17 @@ export type BookCategory = {
   name: string
 }
 
+export type BookAuthor = {
+  id: string
+  name: string
+}
+
 export type Book = {
   id: string
   name: string
   author_name: string
   author_id: string
+  author?: BookAuthor
   available_stock: number
   image_url?: string | null
   is_active: boolean

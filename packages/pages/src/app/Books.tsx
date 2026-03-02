@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast, Toaster } from 'react-hot-toast'
 
 import { addToCart } from '@booknest/services/cartService'
 import { type Book, listBooks } from '@booknest/services/bookService'
@@ -8,6 +9,7 @@ import { getRole } from '@booknest/utils'
 import { formatPrice } from '@booknest/utils'
 
 export default function Books(): React.ReactElement {
+  const navigate = useNavigate()
   const role = getRole()
   const isAdmin = role === 'ADMIN'
 
@@ -40,7 +42,7 @@ export default function Books(): React.ReactElement {
 
     return books.filter((book) => {
       const title = (book.name || '').toLowerCase()
-      const author = (book.author_name || '').toLowerCase()
+      const author = (book?.author?.name || '').toLowerCase()
       const isbn = (book.isbn || '').toLowerCase()
       return (
         title.includes(keyword) ||
@@ -56,6 +58,7 @@ export default function Books(): React.ReactElement {
 
     try {
       await addToCart(bookId, 1)
+      toast.success('Book added to cart successfully')
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Unable to add book to cart')
     } finally {
@@ -63,8 +66,13 @@ export default function Books(): React.ReactElement {
     }
   }
 
+  const openBookDetails = (bookId: string) => {
+    navigate(`/books/${bookId}`)
+  }
+
   return (
     <section className="space-y-5">
+      <Toaster />
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">Books</h1>
@@ -112,7 +120,17 @@ export default function Books(): React.ReactElement {
           {filteredBooks.map((book) => (
             <article
               key={book.id}
-              className="bn-card-solid flex h-full flex-col rounded-xl p-4 transition hover:-translate-y-0.5"
+              className="bn-card-solid flex h-full cursor-pointer flex-col rounded-xl p-4 transition hover:-translate-y-0.5"
+              onClick={() => openBookDetails(book.id)}
+              onKeyDown={(event) => {
+                if (event.target !== event.currentTarget) return
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  openBookDetails(book.id)
+                }
+              }}
+              role="link"
+              tabIndex={0}
             >
               <div className="mb-4 h-40 rounded-md bg-zinc-100">
                 {book.image_url ? (
@@ -129,7 +147,7 @@ export default function Books(): React.ReactElement {
               </div>
 
               <h2 className="text-lg font-semibold text-zinc-900">{book.name || 'Untitled'}</h2>
-              <p className="text-sm text-zinc-600">{book.author_name || 'Unknown author'}</p>
+              <p className="text-sm text-zinc-600">{book?.author?.name || 'Unknown author'}</p>
               {book.categories && book.categories.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {book.categories.map((category) => (
@@ -153,17 +171,14 @@ export default function Books(): React.ReactElement {
               </div>
 
               <div className="mt-4 flex items-center gap-2">
-                <Link
-                  to={`/books/${book.id}`}
-                  className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm font-medium text-orange-900 hover:bg-orange-100"
-                >
-                  Details
-                </Link>
                 {!isAdmin && (
                   <button
                     type="button"
                     className="bn-button px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                    onClick={() => void handleAddToCart(book.id)}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      void handleAddToCart(book.id)
+                    }}
                     disabled={addingId === book.id || book.available_stock < 1}
                   >
                     {addingId === book.id ? 'Adding...' : 'Add to Cart'}

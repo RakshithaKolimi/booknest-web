@@ -147,13 +147,13 @@ export default function Cart(): React.ReactElement {
                 className="bn-card-solid rounded-xl p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
+                  <Link to={`/books/${item.book_id}`} className="block">
                     <h2 className="text-base font-semibold text-zinc-900">{item.name}</h2>
                     <p className="text-sm text-zinc-600">{item.author_name}</p>
                     <p className="text-sm text-zinc-600">
                       {formatPrice(item.unit_price)} each
                     </p>
-                  </div>
+                  </Link>
 
                   <div className="flex items-center gap-2">
                     <button
