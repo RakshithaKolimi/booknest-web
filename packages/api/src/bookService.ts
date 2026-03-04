@@ -44,8 +44,33 @@ export type BookInput = {
   category_ids?: string[]
 }
 
+export type ListBooksQueryParams = {
+  limit?: number
+  offset?: number
+  cursor?: string
+  search?: string
+  isbn?: string
+  book_name?: string
+  author_name?: string
+  publisher_name?: string
+  category?: string
+}
+
+export type BookSearchResult = {
+  items: Book[]
+  total: number
+  limit: number
+  offset: number
+  next_cursor?: string
+  has_more: boolean
+}
+
 export async function listBooks(): Promise<Book[]> {
   return getData<Book[]>('/books')
+}
+
+export async function queryBooks(params?: ListBooksQueryParams): Promise<BookSearchResult> {
+  return getData<BookSearchResult>('/books/search', { params })
 }
 
 export async function getBookById(id: string): Promise<Book> {

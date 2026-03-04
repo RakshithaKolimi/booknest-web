@@ -1,12 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast, Toaster } from 'react-hot-toast'
 
 import { addToCart } from '@booknest/services/cartService'
-import { type Book, listBooks } from '@booknest/services/bookService'
+import {
+  type Book,
+  queryBooks,
+  type ListBooksQueryParams,
+} from '@booknest/services/bookService'
 import { getRole } from '@booknest/utils'
 
 import { formatPrice } from '@booknest/utils'
+
+type PaginationMode = 'offset' | 'cursor'
+
+const PAGE_SIZE = 12
 
 export default function Books(): React.ReactElement {
   const navigate = useNavigate()
@@ -14,17 +22,42 @@ export default function Books(): React.ReactElement {
   const isAdmin = role === 'ADMIN'
 
   const [books, setBooks] = useState<Book[]>([])
-  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addingId, setAddingId] = useState('')
 
+  const [mode, setMode] = useState<PaginationMode>('offset')
+  const [offset, setOffset] = useState(0)
+  const [nextCursor, setNextCursor] = useState('')
+  const [cursorStack, setCursorStack] = useState<string[]>([])
+  const [currentCursor, setCurrentCursor] = useState('')
+  const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+
+  const [searchInput, setSearchInput] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
+
   const loadBooks = async () => {
     setLoading(true)
     setError('')
+
+    const params: ListBooksQueryParams = {
+      limit: PAGE_SIZE,
+      search: appliedSearch || undefined,
+    }
+
+    if (mode === 'offset') {
+      params.offset = offset
+    } else if (currentCursor) {
+      params.cursor = currentCursor
+    }
+
     try {
-      const data = await listBooks()
-      setBooks(data)
+      const result = await queryBooks(params)
+      setBooks(result.items)
+      setTotal(result.total)
+      setHasMore(result.has_more)
+      setNextCursor(result.next_cursor || '')
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Failed to load books')
     } finally {
@@ -34,23 +67,29 @@ export default function Books(): React.ReactElement {
 
   useEffect(() => {
     void loadBooks()
-  }, [])
+  }, [mode, offset, currentCursor, appliedSearch])
 
-  const filteredBooks = useMemo(() => {
-    const keyword = search.trim().toLowerCase()
-    if (!keyword) return books
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const nextSearch = searchInput.trim()
+      setOffset(0)
+      setCurrentCursor('')
+      setCursorStack([])
+      setAppliedSearch(nextSearch)
+    }, 300)
 
-    return books.filter((book) => {
-      const title = (book.name || '').toLowerCase()
-      const author = (book?.author?.name || '').toLowerCase()
-      const isbn = (book.isbn || '').toLowerCase()
-      return (
-        title.includes(keyword) ||
-        author.includes(keyword) ||
-        isbn.includes(keyword)
-      )
-    })
-  }, [books, search])
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [searchInput])
+
+  const onResetSearch = () => {
+    setSearchInput('')
+    setAppliedSearch('')
+    setOffset(0)
+    setCurrentCursor('')
+    setCursorStack([])
+  }
 
   const handleAddToCart = async (bookId: string) => {
     setAddingId(bookId)
@@ -70,6 +109,9 @@ export default function Books(): React.ReactElement {
     navigate(`/books/${bookId}`)
   }
 
+  const currentPage = Math.floor(offset / PAGE_SIZE) + 1
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+
   return (
     <section className="space-y-5">
       <Toaster />
@@ -79,17 +121,25 @@ export default function Books(): React.ReactElement {
           <p className="text-sm text-zinc-600">
             {isAdmin
               ? 'Review the catalog and jump into admin book creation.'
-              : 'Browse, search, and add books to your cart.'}
+              : 'Browse books and add them to your cart.'}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by title, author, or ISBN"
-            className="bn-input w-full px-3 py-2 text-sm md:w-80"
-          />
+          <select
+            value={mode}
+            onChange={(event) => {
+              const nextMode = event.target.value as PaginationMode
+              setMode(nextMode)
+              setOffset(0)
+              setCurrentCursor('')
+              setCursorStack([])
+            }}
+            className="bn-input px-3 py-2 text-sm"
+          >
+            <option value="offset">Offset</option>
+            <option value="cursor">Cursor</option>
+          </select>
           {isAdmin && (
             <Link
               to="/admin/manage"
@@ -101,6 +151,20 @@ export default function Books(): React.ReactElement {
         </div>
       </header>
 
+      <div className="bn-card-solid flex flex-col gap-3 rounded-xl p-4 md:flex-row md:items-center">
+        <input
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder="Search by ISBN, book name, author name, publisher name, category name"
+          className="bn-input w-full px-3 py-2 text-sm"
+        />
+        <div className="flex items-center gap-2">
+          <button type="button" className="bn-button px-3 py-2 text-sm" onClick={onResetSearch}>
+            Reset
+          </button>
+        </div>
+      </div>
+
       {error && (
         <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
@@ -111,13 +175,13 @@ export default function Books(): React.ReactElement {
         <div className="bn-card-solid rounded-xl p-6 text-sm text-zinc-600">
           Loading books...
         </div>
-      ) : filteredBooks.length === 0 ? (
+      ) : books.length === 0 ? (
         <div className="bn-card-solid rounded-xl p-6 text-sm text-zinc-600">
           No books found.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredBooks.map((book) => (
+          {books.map((book) => (
             <article
               key={book.id}
               className="bn-card-solid flex h-full cursor-pointer flex-col rounded-xl p-4 transition hover:-translate-y-0.5"
@@ -148,14 +212,17 @@ export default function Books(): React.ReactElement {
 
               <h2 className="text-lg font-semibold text-zinc-900">{book.name || 'Untitled'}</h2>
               <p className="text-sm text-zinc-600">{book?.author?.name || 'Unknown author'}</p>
+              <p className="text-xs text-zinc-500">
+                Category: {book.categories?.map((item) => item.name).join(', ') || 'Uncategorized'}
+              </p>
               {book.categories && book.categories.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {book.categories.map((category) => (
+                  {book.categories.map((bookCategory) => (
                     <span
-                      key={category.id}
+                      key={bookCategory.id}
                       className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 ring-1 ring-orange-200"
                     >
-                      {category.name}
+                      {bookCategory.name}
                     </span>
                   ))}
                 </div>
@@ -189,6 +256,67 @@ export default function Books(): React.ReactElement {
           ))}
         </div>
       )}
+
+      <div className="bn-card-solid flex flex-col gap-2 rounded-xl p-4 text-sm md:flex-row md:items-center md:justify-between">
+        {mode === 'offset' ? (
+          <p className="text-zinc-600">Page {currentPage} of {totalPages} ({total} books)</p>
+        ) : (
+          <p className="text-zinc-600">Cursor mode ({books.length} books loaded)</p>
+        )}
+
+        <div className="flex items-center gap-2">
+          {mode === 'offset' ? (
+            <>
+              <button
+                type="button"
+                className="bn-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setOffset((value) => Math.max(0, value - PAGE_SIZE))}
+                disabled={offset === 0 || loading}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                className="bn-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setOffset((value) => value + PAGE_SIZE)}
+                disabled={loading || offset + PAGE_SIZE >= total}
+              >
+                Next
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="bn-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => {
+                  if (cursorStack.length === 0) {
+                    setCurrentCursor('')
+                    return
+                  }
+                  const previousCursor = cursorStack[cursorStack.length - 1]
+                  setCursorStack((stack) => stack.slice(0, -1))
+                  setCurrentCursor(previousCursor)
+                }}
+                disabled={loading || (cursorStack.length === 0 && currentCursor === '')}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                className="bn-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => {
+                  setCursorStack((stack) => [...stack, currentCursor])
+                  setCurrentCursor(nextCursor)
+                }}
+                disabled={loading || !hasMore || !nextCursor}
+              >
+                Next
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </section>
   )
 }
