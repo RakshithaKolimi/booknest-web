@@ -15,8 +15,9 @@ import {
   ResetSuccessful,
   UnAuthorized,
 } from '@booknest/pages'
-import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
 import { Header } from '@booknest/ui'
+import { Logout } from '@booknest/ui'
+import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
 import { clearAuthSession, getRole } from '@booknest/utils'
 import React from 'react'
 import {
@@ -26,7 +27,6 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom'
-import { Logout } from '@booknest/ui'
 
 export default function App() {
   const location = useLocation()

@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom'
+
+import { Buffer } from 'buffer'
 import React from 'react'
 import { vi } from 'vitest'
 
