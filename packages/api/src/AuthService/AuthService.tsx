@@ -39,7 +39,10 @@ export type ILoginResponse = {
 export async function forgotPassword(
   input: IForgotPasswordInput
 ): Promise<IForgotPasswordResponse> {
-  return postData<IForgotPasswordResponse, IForgotPasswordInput>('/forgot-password', input)
+  return postData<IForgotPasswordResponse, IForgotPasswordInput>(
+    '/forgot-password',
+    input
+  )
 }
 
 export async function resetPasswordWithToken(
@@ -52,14 +55,10 @@ export async function resetPasswordWithToken(
   )
 }
 
-export async function register(
-  input: IRegisterInput
-): Promise<string> {
+export async function register(input: IRegisterInput): Promise<string> {
   return postData<string, IRegisterInput>('/register', input)
 }
 
-export async function login(
-  input: ILoginInput
-): Promise<ILoginResponse> {
+export async function login(input: ILoginInput): Promise<ILoginResponse> {
   return postData<ILoginResponse, ILoginInput>('/login', input)
 }

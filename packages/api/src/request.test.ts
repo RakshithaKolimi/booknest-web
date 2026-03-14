@@ -36,7 +36,11 @@ describe('request helpers', () => {
     const config: AxiosRequestConfig = { headers: { 'x-id': '1' } }
     mockClient.post.mockResolvedValue({ data: { id: 1 } })
 
-    const data = await postData<{ id: number }, typeof body>('/books', body, config)
+    const data = await postData<{ id: number }, typeof body>(
+      '/books',
+      body,
+      config
+    )
 
     expect(mockClient.post).toHaveBeenCalledWith('/books', body, config)
     expect(data).toEqual({ id: 1 })
@@ -45,11 +49,18 @@ describe('request helpers', () => {
   it('putData forwards body and config', async () => {
     mockClient.put.mockResolvedValue({ data: { updated: true } })
 
-    const data = await putData<{ updated: boolean }, { name: string }>('/books/1', {
-      name: 'Updated',
-    })
+    const data = await putData<{ updated: boolean }, { name: string }>(
+      '/books/1',
+      {
+        name: 'Updated',
+      }
+    )
 
-    expect(mockClient.put).toHaveBeenCalledWith('/books/1', { name: 'Updated' }, undefined)
+    expect(mockClient.put).toHaveBeenCalledWith(
+      '/books/1',
+      { name: 'Updated' },
+      undefined
+    )
     expect(data).toEqual({ updated: true })
   })
 

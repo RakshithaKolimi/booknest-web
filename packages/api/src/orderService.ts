@@ -1,6 +1,11 @@
 import { getData, postData } from './request'
 
-export type PaymentMethod = 'COD' | 'CREDIT_CARD' | 'DEBIT_CARD' | 'NET_BANKING' | 'UPI'
+export type PaymentMethod =
+  | 'COD'
+  | 'CREDIT_CARD'
+  | 'DEBIT_CARD'
+  | 'NET_BANKING'
+  | 'UPI'
 
 export type OrderItem = {
   book_id: string
@@ -29,20 +34,28 @@ export type OrderView = {
   items: OrderItem[]
 }
 
-export async function checkout(payment_method: PaymentMethod): Promise<OrderView> {
-  return postData<OrderView, { payment_method: PaymentMethod }>('/orders/checkout', {
-    payment_method,
-  })
+export async function checkout(
+  payment_method: PaymentMethod
+): Promise<OrderView> {
+  return postData<OrderView, { payment_method: PaymentMethod }>(
+    '/orders/checkout',
+    {
+      payment_method,
+    }
+  )
 }
 
 export async function confirmPayment(
   order_id: string,
   success: boolean
 ): Promise<OrderView> {
-  return postData<OrderView, { order_id: string; success: boolean }>('/orders/confirm', {
-    order_id,
-    success,
-  })
+  return postData<OrderView, { order_id: string; success: boolean }>(
+    '/orders/confirm',
+    {
+      order_id,
+      success,
+    }
+  )
 }
 
 export async function listMyOrders(): Promise<OrderView[]> {

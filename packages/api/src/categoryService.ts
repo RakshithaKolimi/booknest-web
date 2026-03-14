@@ -15,7 +15,9 @@ export async function listCategories(): Promise<Category[]> {
   return getData<Category[]>('/categories')
 }
 
-export async function createCategory(payload: CategoryInput): Promise<Category> {
+export async function createCategory(
+  payload: CategoryInput
+): Promise<Category> {
   return postData<Category, CategoryInput>('/categories', payload)
 }
 

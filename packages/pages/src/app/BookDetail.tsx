@@ -70,7 +70,10 @@ export default function BookDetail(): React.ReactElement {
         <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error || 'Book not found'}
         </div>
-        <Link to="/books" className="text-sm font-semibold text-zinc-900 underline">
+        <Link
+          to="/books"
+          className="text-sm font-semibold text-zinc-900 underline"
+        >
           Back to books
         </Link>
       </div>
@@ -80,7 +83,10 @@ export default function BookDetail(): React.ReactElement {
   return (
     <section className="space-y-5">
       <Toaster />
-      <Link to="/books" className="text-sm font-semibold text-zinc-700 underline">
+      <Link
+        to="/books"
+        className="text-sm font-semibold text-zinc-700 underline"
+      >
         Back to books
       </Link>
 
@@ -139,7 +145,10 @@ export default function BookDetail(): React.ReactElement {
 
           {!isAdmin && (
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <label htmlFor="quantity" className="text-sm font-medium text-zinc-700">
+              <label
+                htmlFor="quantity"
+                className="text-sm font-medium text-zinc-700"
+              >
                 Quantity
               </label>
               <input
@@ -155,7 +164,9 @@ export default function BookDetail(): React.ReactElement {
                     return
                   }
 
-                  setQuantity(Math.min(parsed, Math.max(book.available_stock, 1)))
+                  setQuantity(
+                    Math.min(parsed, Math.max(book.available_stock, 1))
+                  )
                 }}
                 className="w-20 rounded-md border border-zinc-300 px-2 py-1 text-sm"
               />

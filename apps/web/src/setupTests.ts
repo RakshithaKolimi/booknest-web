@@ -21,7 +21,6 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 })
 
-
 Object.defineProperty(window, 'atob', {
   value: (input: string) => Buffer.from(input, 'base64').toString('binary'),
   writable: true,

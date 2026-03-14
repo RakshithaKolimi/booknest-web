@@ -42,7 +42,9 @@ export default function ForgotPassword(): React.ReactElement {
 
       toast.success('Password Reset Link Sent!')
       if (response.reset_token) {
-        navigate(`/reset-password?token=${encodeURIComponent(response.reset_token)}`)
+        navigate(
+          `/reset-password?token=${encodeURIComponent(response.reset_token)}`
+        )
       } else {
         navigate('/reset-successful')
       }

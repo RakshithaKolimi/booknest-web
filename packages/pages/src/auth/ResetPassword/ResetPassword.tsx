@@ -9,7 +9,10 @@ import { toast, Toaster } from 'react-hot-toast'
 export default function ResetPassword(): React.ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const token = useMemo(() => searchParams.get('token')?.trim() || '', [searchParams])
+  const token = useMemo(
+    () => searchParams.get('token')?.trim() || '',
+    [searchParams]
+  )
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     new_password: '',
@@ -61,9 +64,7 @@ export default function ResetPassword(): React.ReactElement {
         <form className="form" onSubmit={handleSubmit}>
           <Header className="login-logo" />
           <h3 className="log-in-text">Reset Password</h3>
-          <p className="sign-up-text">
-            Enter a new password for your account.
-          </p>
+          <p className="sign-up-text">Enter a new password for your account.</p>
           <input
             name="new_password"
             type="password"

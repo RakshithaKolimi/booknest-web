@@ -19,7 +19,13 @@ import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
 import { Header } from '@booknest/ui'
 import { clearAuthSession, getRole } from '@booknest/utils'
 import React from 'react'
-import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import {
+  NavLink,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 import { Logout } from '@booknest/ui'
 
 export default function App() {
@@ -91,11 +97,16 @@ export default function App() {
       )}
 
       <main
-        className={isAuthPage ? '' : 'bn-main mx-auto w-full max-w-7xl px-4 py-8'}
+        className={
+          isAuthPage ? '' : 'bn-main mx-auto w-full max-w-7xl px-4 py-8'
+        }
       >
         <div className={isAuthPage ? '' : 'space-y-2'}>
           <Routes>
-            <Route path="/login" element={<PublicRoute element={<Login />} />} />
+            <Route
+              path="/login"
+              element={<PublicRoute element={<Login />} />}
+            />
             <Route
               path="/register"
               element={<PublicRoute element={<Register />} />}
@@ -114,7 +125,10 @@ export default function App() {
             />
 
             <Route path="/" element={<PrivateRoute element={<Home />} />} />
-            <Route path="/books" element={<PrivateRoute element={<Books />} />} />
+            <Route
+              path="/books"
+              element={<PrivateRoute element={<Books />} />}
+            />
             <Route
               path="/books/:id"
               element={<PrivateRoute element={<BookDetail />} />}

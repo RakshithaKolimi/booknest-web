@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @source "../../../packages/pages/src/**/*.{ts,tsx,js,jsx}";
 @source "../../../packages/ui/src/**/*.{ts,tsx,js,jsx}";
 @source "../../../packages/ui-helpers/src/**/*.{ts,tsx,js,jsx}";
@@ -28,11 +28,7 @@ body,
   height: 100%;
   margin: 0;
   background: var(--paper);
-  font-family:
-    'Plus Jakarta Sans',
-    'Avenir Next',
-    'Segoe UI',
-    sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif;
   color: var(--ink-900);
 }
 
@@ -114,11 +110,18 @@ a {
 .bn-button {
   border: 0;
   border-radius: 0.75rem;
-  background: linear-gradient(90deg, var(--brand-700) 0%, var(--brand-500) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--brand-700) 0%,
+    var(--brand-500) 100%
+  );
   color: #fff7ed;
   font-weight: 600;
   letter-spacing: 0.01em;
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease;
 }
 
 .bn-button:hover {

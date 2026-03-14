@@ -69,7 +69,9 @@ export async function listBooks(): Promise<Book[]> {
   return getData<Book[]>('/books')
 }
 
-export async function queryBooks(params?: ListBooksQueryParams): Promise<BookSearchResult> {
+export async function queryBooks(
+  params?: ListBooksQueryParams
+): Promise<BookSearchResult> {
   return getData<BookSearchResult>('/books/search', { params })
 }
 
@@ -81,7 +83,10 @@ export async function createBook(payload: BookInput): Promise<Book> {
   return postData<Book, BookInput>('/books', payload)
 }
 
-export async function updateBook(id: string, payload: BookInput): Promise<Book> {
+export async function updateBook(
+  id: string,
+  payload: BookInput
+): Promise<Book> {
   return putData<Book, BookInput>(`/books/${id}`, payload)
 }
 

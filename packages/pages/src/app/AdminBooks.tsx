@@ -90,16 +90,17 @@ export default function AdminBooks(): React.ReactElement {
     setLoading(true)
     setError('')
     try {
-      const [bookData, authorData, publisherData, categoryData] = await Promise.all([
-        listBooks(),
-        listAuthors({
-          limit: 500,
-        }),
-        listPublishers({
-          limit: 500,
-        }),
-        listCategories(),
-      ])
+      const [bookData, authorData, publisherData, categoryData] =
+        await Promise.all([
+          listBooks(),
+          listAuthors({
+            limit: 500,
+          }),
+          listPublishers({
+            limit: 500,
+          }),
+          listCategories(),
+        ])
       setBooks(bookData)
       setAuthors(authorData)
       setPublishers(publisherData)
@@ -119,7 +120,9 @@ export default function AdminBooks(): React.ReactElement {
   const filteredAuthors = useMemo(() => {
     const keyword = authorSearch.trim().toLowerCase()
     if (!keyword) return authors
-    return authors.filter((author) => author.name.toLowerCase().includes(keyword))
+    return authors.filter((author) =>
+      author.name.toLowerCase().includes(keyword)
+    )
   }, [authors, authorSearch])
 
   const filteredPublishers = useMemo(() => {
@@ -141,7 +144,11 @@ export default function AdminBooks(): React.ReactElement {
     const keyword = bookSearch.trim().toLowerCase()
     if (!keyword) return books
     return books.filter((book) => {
-      const authorName = (book?.author?.name || authorNameById.get(book.author_id) || '').toLowerCase()
+      const authorName = (
+        book?.author?.name ||
+        authorNameById.get(book.author_id) ||
+        ''
+      ).toLowerCase()
       return (
         book.name.toLowerCase().includes(keyword) ||
         authorName.includes(keyword) ||
@@ -331,7 +338,8 @@ export default function AdminBooks(): React.ReactElement {
     const selectedPublisher = publishers.find(
       (publisher) => publisher.id === book.publisher_id
     )
-    const resolvedAuthorName = book?.author?.name || authorNameById.get(book.author_id) || ''
+    const resolvedAuthorName =
+      book?.author?.name || authorNameById.get(book.author_id) || ''
     setTab('books')
     setEditingBookId(book.id)
     setBookForm({
@@ -479,7 +487,10 @@ export default function AdminBooks(): React.ReactElement {
                     step="0.01"
                     value={bookForm.price}
                     onChange={(event) =>
-                      setBookForm({ ...bookForm, price: Number(event.target.value) })
+                      setBookForm({
+                        ...bookForm,
+                        price: Number(event.target.value),
+                      })
                     }
                     placeholder="Price"
                     className="w-full rounded-md border border-zinc-300 px-3 py-2 pr-9 text-sm"
@@ -503,7 +514,9 @@ export default function AdminBooks(): React.ReactElement {
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 />
                 <div className="md:col-span-2">
-                  <p className="mb-2 text-sm font-medium text-zinc-700">Categories</p>
+                  <p className="mb-2 text-sm font-medium text-zinc-700">
+                    Categories
+                  </p>
                   <div className="flex flex-wrap gap-2 rounded-md border border-zinc-300 p-2">
                     {categories.map((category) => {
                       const isSelected = Boolean(
@@ -514,7 +527,8 @@ export default function AdminBooks(): React.ReactElement {
                           key={category.id}
                           type="button"
                           onClick={() => {
-                            const currentCategoryIDs = bookForm.category_ids || []
+                            const currentCategoryIDs =
+                              bookForm.category_ids || []
                             const updatedCategoryIDs = isSelected
                               ? currentCategoryIDs.filter(
                                   (categoryID) => categoryID !== category.id
@@ -587,7 +601,10 @@ export default function AdminBooks(): React.ReactElement {
                 <textarea
                   value={bookForm.description}
                   onChange={(event) =>
-                    setBookForm({ ...bookForm, description: event.target.value })
+                    setBookForm({
+                      ...bookForm,
+                      description: event.target.value,
+                    })
                   }
                   placeholder="Description"
                   rows={4}
@@ -599,10 +616,16 @@ export default function AdminBooks(): React.ReactElement {
                     type="checkbox"
                     checked={bookForm.is_active}
                     onChange={(event) =>
-                      setBookForm({ ...bookForm, is_active: event.target.checked })
+                      setBookForm({
+                        ...bookForm,
+                        is_active: event.target.checked,
+                      })
                     }
                   />
-                  <label htmlFor="book-active" className="text-sm text-zinc-700">
+                  <label
+                    htmlFor="book-active"
+                    className="text-sm text-zinc-700"
+                  >
                     Active
                   </label>
                 </div>
@@ -612,7 +635,11 @@ export default function AdminBooks(): React.ReactElement {
                     disabled={saving}
                     className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
                   >
-                    {saving ? 'Saving...' : editingBookId ? 'Update Book' : 'Create Book'}
+                    {saving
+                      ? 'Saving...'
+                      : editingBookId
+                        ? 'Update Book'
+                        : 'Create Book'}
                   </button>
                   {editingBookId && (
                     <button
@@ -653,7 +680,9 @@ export default function AdminBooks(): React.ReactElement {
                             {book.name}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
-                            {book?.author?.name || authorNameById.get(book.author_id) || '-'}
+                            {book?.author?.name ||
+                              authorNameById.get(book.author_id) ||
+                              '-'}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
                             {book.categories && book.categories.length > 0 ? (
@@ -668,7 +697,9 @@ export default function AdminBooks(): React.ReactElement {
                                 ))}
                               </div>
                             ) : (
-                              <span className="text-xs text-zinc-500">No categories</span>
+                              <span className="text-xs text-zinc-500">
+                                No categories
+                              </span>
                             )}
                           </td>
                           <td className="py-2 pr-4 text-zinc-700">
@@ -753,7 +784,9 @@ export default function AdminBooks(): React.ReactElement {
                       key={author.id}
                       className="flex items-center justify-between rounded-md border border-zinc-200 px-3 py-2"
                     >
-                      <span className="text-sm text-zinc-800">{author.name}</span>
+                      <span className="text-sm text-zinc-800">
+                        {author.name}
+                      </span>
                       <div className="flex gap-2">
                         <button
                           type="button"
@@ -812,7 +845,10 @@ export default function AdminBooks(): React.ReactElement {
                   type="email"
                   value={publisherForm.email}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, email: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      email: event.target.value,
+                    })
                   }
                   placeholder="Email"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -821,7 +857,10 @@ export default function AdminBooks(): React.ReactElement {
                   required
                   value={publisherForm.mobile}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, mobile: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      mobile: event.target.value,
+                    })
                   }
                   placeholder="Mobile (+123...)"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -830,7 +869,10 @@ export default function AdminBooks(): React.ReactElement {
                   required
                   value={publisherForm.address}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, address: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      address: event.target.value,
+                    })
                   }
                   placeholder="Address"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
@@ -839,7 +881,10 @@ export default function AdminBooks(): React.ReactElement {
                   required
                   value={publisherForm.city}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, city: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      city: event.target.value,
+                    })
                   }
                   placeholder="City"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -848,7 +893,10 @@ export default function AdminBooks(): React.ReactElement {
                   required
                   value={publisherForm.state}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, state: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      state: event.target.value,
+                    })
                   }
                   placeholder="State"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -857,7 +905,10 @@ export default function AdminBooks(): React.ReactElement {
                   required
                   value={publisherForm.country}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, country: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      country: event.target.value,
+                    })
                   }
                   placeholder="Country"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -866,7 +917,10 @@ export default function AdminBooks(): React.ReactElement {
                   required
                   value={publisherForm.zipcode}
                   onChange={(event) =>
-                    setPublisherForm({ ...publisherForm, zipcode: event.target.value })
+                    setPublisherForm({
+                      ...publisherForm,
+                      zipcode: event.target.value,
+                    })
                   }
                   placeholder="Zipcode"
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -896,7 +950,9 @@ export default function AdminBooks(): React.ReactElement {
               </form>
 
               <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-                <h2 className="text-lg font-semibold text-zinc-900">Publishers</h2>
+                <h2 className="text-lg font-semibold text-zinc-900">
+                  Publishers
+                </h2>
                 <input
                   value={publisherSearch}
                   onChange={(event) => setPublisherSearch(event.target.value)}
@@ -915,12 +971,19 @@ export default function AdminBooks(): React.ReactElement {
                     </thead>
                     <tbody>
                       {filteredPublishers.map((publisher) => (
-                        <tr key={publisher.id} className="border-t border-zinc-100">
+                        <tr
+                          key={publisher.id}
+                          className="border-t border-zinc-100"
+                        >
                           <td className="py-2 pr-4 font-medium text-zinc-900">
                             {publisher.trading_name}
                           </td>
-                          <td className="py-2 pr-4 text-zinc-700">{publisher.email}</td>
-                          <td className="py-2 pr-4 text-zinc-700">{publisher.city}</td>
+                          <td className="py-2 pr-4 text-zinc-700">
+                            {publisher.email}
+                          </td>
+                          <td className="py-2 pr-4 text-zinc-700">
+                            {publisher.city}
+                          </td>
                           <td className="py-2 pr-4">
                             <div className="flex gap-2">
                               <button
@@ -933,7 +996,9 @@ export default function AdminBooks(): React.ReactElement {
                               <button
                                 type="button"
                                 className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
-                                onClick={() => void onDeletePublisher(publisher.id)}
+                                onClick={() =>
+                                  void onDeletePublisher(publisher.id)
+                                }
                               >
                                 Delete
                               </button>
@@ -984,14 +1049,18 @@ export default function AdminBooks(): React.ReactElement {
               </form>
 
               <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-                <h2 className="text-lg font-semibold text-zinc-900">Categories</h2>
+                <h2 className="text-lg font-semibold text-zinc-900">
+                  Categories
+                </h2>
                 <div className="mt-3 space-y-2">
                   {categories.map((category) => (
                     <div
                       key={category.id}
                       className="flex items-center justify-between rounded-md border border-zinc-200 px-3 py-2"
                     >
-                      <span className="text-sm text-zinc-800">{category.name}</span>
+                      <span className="text-sm text-zinc-800">
+                        {category.name}
+                      </span>
                       <div className="flex gap-2">
                         <button
                           type="button"

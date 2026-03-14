@@ -2,7 +2,8 @@ import { clearAuthSession, safeLocalStorage } from '@booknest/utils'
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
 const API_VERSION_PREFIX = '/api/v1'
-const configuredBaseURL = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
+const configuredBaseURL =
+  import.meta.env.VITE_API_BASE || 'http://localhost:8080'
 const normalizedBaseURL = configuredBaseURL.replace(/\/+$/, '')
 const baseURL = normalizedBaseURL.endsWith(API_VERSION_PREFIX)
   ? normalizedBaseURL
@@ -63,10 +64,9 @@ async function requestNewAccessToken(): Promise<string> {
     const axiosError = error as AxiosError
     if (axiosError.response?.status === 404) {
       // Backward compatibility for environments still exposing /refresh.
-      const fallbackResponse = await refreshClient.post<{ access_token: string }>(
-        '/refresh',
-        { refresh_token: refreshToken }
-      )
+      const fallbackResponse = await refreshClient.post<{
+        access_token: string
+      }>('/refresh', { refresh_token: refreshToken })
       if (!fallbackResponse.data?.access_token) {
         throw new Error('missing access token in refresh response')
       }

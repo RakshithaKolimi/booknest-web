@@ -7,7 +7,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease;
 }
 
 /* only for login */

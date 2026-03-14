@@ -148,7 +148,9 @@ export default function Cart(): React.ReactElement {
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <Link to={`/books/${item.book_id}`} className="block">
-                    <h2 className="text-base font-semibold text-zinc-900">{item.name}</h2>
+                    <h2 className="text-base font-semibold text-zinc-900">
+                      {item.name}
+                    </h2>
                     <p className="text-sm text-zinc-600">{item.author_name}</p>
                     <p className="text-sm text-zinc-600">
                       {formatPrice(item.unit_price)} each
@@ -158,16 +160,22 @@ export default function Cart(): React.ReactElement {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => void handleQuantity(item.book_id, item.count - 1)}
+                      onClick={() =>
+                        void handleQuantity(item.book_id, item.count - 1)
+                      }
                       className="rounded-lg border border-orange-200 bg-orange-50 px-2 py-1 text-sm text-orange-900"
                       disabled={item.count <= 1}
                     >
                       -
                     </button>
-                    <span className="w-8 text-center text-sm font-medium">{item.count}</span>
+                    <span className="w-8 text-center text-sm font-medium">
+                      {item.count}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => void handleQuantity(item.book_id, item.count + 1)}
+                      onClick={() =>
+                        void handleQuantity(item.book_id, item.count + 1)
+                      }
                       className="rounded-lg border border-orange-200 bg-orange-50 px-2 py-1 text-sm text-orange-900"
                     >
                       +
@@ -199,7 +207,9 @@ export default function Cart(): React.ReactElement {
 
           <aside className="bn-card-solid rounded-xl p-5">
             <h2 className="text-lg font-semibold text-zinc-900">Checkout</h2>
-            <p className="mt-2 text-sm text-zinc-600">Total items: {cart.total_items}</p>
+            <p className="mt-2 text-sm text-zinc-600">
+              Total items: {cart.total_items}
+            </p>
             <p className="text-xl font-semibold text-zinc-900">
               {formatPrice(cart.subtotal)}
             </p>
@@ -209,7 +219,9 @@ export default function Cart(): React.ReactElement {
             </label>
             <select
               value={paymentMethod}
-              onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)}
+              onChange={(event) =>
+                setPaymentMethod(event.target.value as PaymentMethod)
+              }
               className="bn-input mt-1 w-full px-3 py-2 text-sm"
             >
               {paymentMethods.map((method) => (

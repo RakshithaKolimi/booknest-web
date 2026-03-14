@@ -12,7 +12,8 @@ export default function Home(): React.ReactElement {
         ? [
             {
               title: 'Manage Catalog',
-              description: 'Create and maintain books, publishers, and authors.',
+              description:
+                'Create and maintain books, publishers, and authors.',
               path: '/admin/manage',
               cta: 'Open Manage',
             },
@@ -68,7 +69,9 @@ export default function Home(): React.ReactElement {
             key={card.path}
             className="bn-card-solid rounded-xl p-5 transition hover:-translate-y-0.5"
           >
-            <h2 className="text-lg font-semibold text-zinc-900">{card.title}</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">
+              {card.title}
+            </h2>
             <p className="mt-2 text-sm text-zinc-600">{card.description}</p>
             <Link
               to={card.path}

@@ -141,10 +141,7 @@ export default function Books(): React.ReactElement {
             <option value="cursor">Cursor</option>
           </select>
           {isAdmin && (
-            <Link
-              to="/admin/manage"
-              className="bn-button px-4 py-2 text-sm"
-            >
+            <Link to="/admin/manage" className="bn-button px-4 py-2 text-sm">
               Manage
             </Link>
           )}
@@ -159,7 +156,11 @@ export default function Books(): React.ReactElement {
           className="bn-input w-full px-3 py-2 text-sm"
         />
         <div className="flex items-center gap-2">
-          <button type="button" className="bn-button px-3 py-2 text-sm" onClick={onResetSearch}>
+          <button
+            type="button"
+            className="bn-button px-3 py-2 text-sm"
+            onClick={onResetSearch}
+          >
             Reset
           </button>
         </div>
@@ -210,10 +211,16 @@ export default function Books(): React.ReactElement {
                 )}
               </div>
 
-              <h2 className="text-lg font-semibold text-zinc-900">{book.name || 'Untitled'}</h2>
-              <p className="text-sm text-zinc-600">{book?.author?.name || 'Unknown author'}</p>
+              <h2 className="text-lg font-semibold text-zinc-900">
+                {book.name || 'Untitled'}
+              </h2>
+              <p className="text-sm text-zinc-600">
+                {book?.author?.name || 'Unknown author'}
+              </p>
               <p className="text-xs text-zinc-500">
-                Category: {book.categories?.map((item) => item.name).join(', ') || 'Uncategorized'}
+                Category:{' '}
+                {book.categories?.map((item) => item.name).join(', ') ||
+                  'Uncategorized'}
               </p>
               {book.categories && book.categories.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -259,9 +266,13 @@ export default function Books(): React.ReactElement {
 
       <div className="bn-card-solid flex flex-col gap-2 rounded-xl p-4 text-sm md:flex-row md:items-center md:justify-between">
         {mode === 'offset' ? (
-          <p className="text-zinc-600">Page {currentPage} of {totalPages} ({total} books)</p>
+          <p className="text-zinc-600">
+            Page {currentPage} of {totalPages} ({total} books)
+          </p>
         ) : (
-          <p className="text-zinc-600">Cursor mode ({books.length} books loaded)</p>
+          <p className="text-zinc-600">
+            Cursor mode ({books.length} books loaded)
+          </p>
         )}
 
         <div className="flex items-center gap-2">
@@ -270,7 +281,9 @@ export default function Books(): React.ReactElement {
               <button
                 type="button"
                 className="bn-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => setOffset((value) => Math.max(0, value - PAGE_SIZE))}
+                onClick={() =>
+                  setOffset((value) => Math.max(0, value - PAGE_SIZE))
+                }
                 disabled={offset === 0 || loading}
               >
                 Previous
@@ -298,7 +311,9 @@ export default function Books(): React.ReactElement {
                   setCursorStack((stack) => stack.slice(0, -1))
                   setCurrentCursor(previousCursor)
                 }}
-                disabled={loading || (cursorStack.length === 0 && currentCursor === '')}
+                disabled={
+                  loading || (cursorStack.length === 0 && currentCursor === '')
+                }
               >
                 Previous
               </button>

@@ -34,11 +34,15 @@ export type ListPublishersParams = {
   search?: string
 }
 
-export async function listPublishers(params?: ListPublishersParams): Promise<Publisher[]> {
+export async function listPublishers(
+  params?: ListPublishersParams
+): Promise<Publisher[]> {
   return getData<Publisher[]>('/publishers', { params })
 }
 
-export async function createPublisher(payload: PublisherInput): Promise<Publisher> {
+export async function createPublisher(
+  payload: PublisherInput
+): Promise<Publisher> {
   return postData<Publisher, PublisherInput>('/publishers', payload)
 }
 

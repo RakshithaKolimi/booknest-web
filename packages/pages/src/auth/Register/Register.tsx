@@ -115,7 +115,7 @@ export default function Register(): React.ReactElement {
             className="log-in-input"
             required
           />
-           <input
+          <input
             name="mobile"
             type="mobile"
             placeholder="Mobile"

@@ -22,7 +22,10 @@ export async function getCart(): Promise<CartView> {
   return getData<CartView>('/cart')
 }
 
-export async function addToCart(book_id: string, count: number): Promise<CartView> {
+export async function addToCart(
+  book_id: string,
+  count: number
+): Promise<CartView> {
   return postData<CartView, { book_id: string; count: number }>('/cart/items', {
     book_id,
     count,

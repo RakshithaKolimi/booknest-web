@@ -44,7 +44,9 @@ export default function Profile(): React.ReactElement {
               {initials || 'BN'}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-zinc-900">{fullName}</h2>
+              <h2 className="text-xl font-semibold text-zinc-900">
+                {fullName}
+              </h2>
               <p className="text-sm text-zinc-600">{email}</p>
             </div>
           </div>
@@ -54,7 +56,9 @@ export default function Profile(): React.ReactElement {
               <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 Role
               </dt>
-              <dd className="mt-1 text-sm font-semibold text-zinc-900">{role}</dd>
+              <dd className="mt-1 text-sm font-semibold text-zinc-900">
+                {role}
+              </dd>
             </div>
             <div className="rounded-lg bg-zinc-50 p-4 ring-1 ring-zinc-200">
               <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -68,12 +72,17 @@ export default function Profile(): React.ReactElement {
         </article>
 
         <aside className="bn-card-solid rounded-xl p-6">
-          <h3 className="text-base font-semibold text-zinc-900">Quick Actions</h3>
+          <h3 className="text-base font-semibold text-zinc-900">
+            Quick Actions
+          </h3>
           <p className="mt-2 text-sm text-zinc-600">
             Jump directly to the sections you use most.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link to={role === 'ADMIN' ? '/admin/orders' : '/orders'} className="bn-button inline-flex px-3 py-2 text-sm">
+            <Link
+              to={role === 'ADMIN' ? '/admin/orders' : '/orders'}
+              className="bn-button inline-flex px-3 py-2 text-sm"
+            >
               View Orders
             </Link>
             <Link

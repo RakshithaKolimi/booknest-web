@@ -44,7 +44,9 @@ export default function Orders(): React.ReactElement {
     <section className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold text-zinc-900">My Orders</h1>
-        <p className="text-sm text-zinc-600">Track your orders and payment status.</p>
+        <p className="text-sm text-zinc-600">
+          Track your orders and payment status.
+        </p>
       </div>
 
       {error && (
@@ -95,14 +97,18 @@ export default function Orders(): React.ReactElement {
                   <button
                     type="button"
                     className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white"
-                    onClick={() => void handleConfirmPayment(entry.order.id, true)}
+                    onClick={() =>
+                      void handleConfirmPayment(entry.order.id, true)
+                    }
                   >
                     Confirm Payment
                   </button>
                   <button
                     type="button"
                     className="rounded-md bg-rose-600 px-3 py-1 text-xs font-medium text-white"
-                    onClick={() => void handleConfirmPayment(entry.order.id, false)}
+                    onClick={() =>
+                      void handleConfirmPayment(entry.order.id, false)
+                    }
                   >
                     Cancel Order
                   </button>

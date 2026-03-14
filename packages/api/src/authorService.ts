@@ -17,7 +17,9 @@ export type ListAuthorsParams = {
   search?: string
 }
 
-export async function listAuthors(params?: ListAuthorsParams): Promise<Author[]> {
+export async function listAuthors(
+  params?: ListAuthorsParams
+): Promise<Author[]> {
   return getData<Author[]>('/authors', { params })
 }
 
@@ -25,7 +27,10 @@ export async function createAuthor(payload: AuthorInput): Promise<Author> {
   return postData<Author, AuthorInput>('/authors', payload)
 }
 
-export async function updateAuthor(id: string, payload: AuthorInput): Promise<Author> {
+export async function updateAuthor(
+  id: string,
+  payload: AuthorInput
+): Promise<Author> {
   return putData<Author, AuthorInput>(`/authors/${id}`, payload)
 }
 

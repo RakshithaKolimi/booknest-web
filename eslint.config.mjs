@@ -74,7 +74,10 @@ export default [
 
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
       'import/order': 'off',

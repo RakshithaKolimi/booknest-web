@@ -36,8 +36,9 @@ export default function AdminOrders(): React.ReactElement {
       </div>
 
       <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
-        Admin order status update endpoint is not currently exposed by backend routes.
-        This page shows complete order details; status changes are handled by user payment confirmation flow.
+        Admin order status update endpoint is not currently exposed by backend
+        routes. This page shows complete order details; status changes are
+        handled by user payment confirmation flow.
       </div>
 
       {error && (
