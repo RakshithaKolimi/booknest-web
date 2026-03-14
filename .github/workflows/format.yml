@@ -1,0 +1,34 @@
+name: Check Formatting
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+   format:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+
+    steps:
+       - name: Checkout repository
+         uses: actions/checkout@v4
+
+       - name: Use Node.js ${{ matrix.node-version }}
+         uses: actions/setup-node@v4
+         with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+       - name: Install dependencies
+         run: pnpm install --frozen-lockfile
+
+       - name: Check formatting
+         run: pnpm check-format
+
+       - name: Lint
+         run: pnpm lint
+
