@@ -3,8 +3,15 @@ import { Link, useParams } from 'react-router-dom'
 import { toast, Toaster } from 'react-hot-toast'
 
 import { addToCart } from '@booknest/services/cartService'
-import { type Book, getBookById } from '@booknest/services/bookService'
-import { getRole } from '@booknest/utils'
+import {
+  type Book,
+  type Review,
+  type ReviewListResponse,
+  getBookById,
+  listBookReviews,
+  upsertBookReview,
+} from '@booknest/services/bookService'
+import { getRole, safeLocalStorage } from '@booknest/utils'
 import { formatPrice } from '@booknest/utils'
 
 export default function BookDetail(): React.ReactElement {
@@ -17,6 +24,20 @@ export default function BookDetail(): React.ReactElement {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [adding, setAdding] = useState(false)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewSummary, setReviewSummary] = useState<
+    ReviewListResponse['summary']
+  >({
+    average_rating: 0,
+    total_reviews: 0,
+  })
+  const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [reviewsError, setReviewsError] = useState('')
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const [savingReview, setSavingReview] = useState(false)
+  const userId = safeLocalStorage.get('user_id')
+  const canReview = !isAdmin && Boolean(userId)
 
   useEffect(() => {
     const loadBook = async () => {
@@ -41,6 +62,38 @@ export default function BookDetail(): React.ReactElement {
     void loadBook()
   }, [id])
 
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!id) {
+        setReviewsError('Book id is missing in URL')
+        setReviewsLoading(false)
+        return
+      }
+
+      setReviewsLoading(true)
+      setReviewsError('')
+      try {
+        const data = await listBookReviews(id)
+        setReviews(data.items)
+        setReviewSummary(data.summary)
+
+        const existingReview = data.items.find(
+          (entry) => entry.user_id === userId
+        )
+        if (existingReview) {
+          setReviewRating(existingReview.rating)
+          setReviewComment(existingReview.comment || '')
+        }
+      } catch (e: any) {
+        setReviewsError(e?.response?.data?.error || 'Unable to load reviews')
+      } finally {
+        setReviewsLoading(false)
+      }
+    }
+
+    void loadReviews()
+  }, [id, userId])
+
   const handleAddToCart = async () => {
     if (!book) return
     setAdding(true)
@@ -54,6 +107,43 @@ export default function BookDetail(): React.ReactElement {
     } finally {
       setAdding(false)
     }
+  }
+
+  const handleReviewSubmit = async () => {
+    if (!id) return
+
+    setSavingReview(true)
+    setReviewsError('')
+    try {
+      await upsertBookReview(id, {
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      })
+      const refreshed = await listBookReviews(id)
+      setReviews(refreshed.items)
+      setReviewSummary(refreshed.summary)
+      toast.success('Your review has been saved')
+    } catch (e: any) {
+      setReviewsError(e?.response?.data?.error || 'Unable to save review')
+    } finally {
+      setSavingReview(false)
+    }
+  }
+
+  const renderStars = (rating: number): string =>
+    Array.from({ length: 5 }, (_, index) =>
+      index < Math.round(rating) ? '★' : '☆'
+    ).join('')
+
+  const getReviewerName = (review: Review): string => {
+    const firstName = review.user?.first_name?.trim() || ''
+    const lastName = review.user?.last_name?.trim() || ''
+    const fullName = `${firstName} ${lastName}`.trim()
+
+    if (fullName) return fullName
+    if (review.user?.email) return review.user.email
+    if (review.user_id === userId) return 'You'
+    return 'BookNest Reader'
   }
 
   if (loading) {
@@ -183,6 +273,156 @@ export default function BookDetail(): React.ReactElement {
           )}
         </div>
       </article>
+
+      <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+        <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-zinc-900">Reviews</h2>
+              <p className="mt-1 text-sm text-zinc-600">
+                {reviewSummary.total_reviews > 0
+                  ? `${reviewSummary.average_rating.toFixed(1)} / 5 average from ${reviewSummary.total_reviews} review${reviewSummary.total_reviews === 1 ? '' : 's'}`
+                  : 'No reviews yet. Be the first to share your thoughts.'}
+              </p>
+            </div>
+            <div className="rounded-xl bg-amber-50 px-3 py-2 text-right ring-1 ring-amber-200">
+              <p className="text-lg font-semibold text-amber-800">
+                {reviewSummary.total_reviews > 0
+                  ? reviewSummary.average_rating.toFixed(1)
+                  : 'New'}
+              </p>
+              <p className="text-xs uppercase tracking-wide text-amber-700">
+                {renderStars(
+                  reviewSummary.total_reviews > 0
+                    ? reviewSummary.average_rating
+                    : 0
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-4">
+            {reviewsLoading && (
+              <div className="rounded-xl bg-zinc-50 px-4 py-3 text-sm text-zinc-600 ring-1 ring-zinc-200">
+                Loading reviews...
+              </div>
+            )}
+
+            {!reviewsLoading && reviews.length === 0 && (
+              <div className="rounded-xl bg-zinc-50 px-4 py-4 text-sm text-zinc-600 ring-1 ring-zinc-200">
+                This book does not have any reviews yet.
+              </div>
+            )}
+
+            {!reviewsLoading &&
+              reviews.map((review) => (
+                <article
+                  key={review.id}
+                  className="rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-zinc-900">
+                        {getReviewerName(review)}
+                      </p>
+                      <p className="text-sm text-amber-700">
+                        {renderStars(review.rating)}{' '}
+                        <span className="text-zinc-500">
+                          ({review.rating}/5)
+                        </span>
+                      </p>
+                    </div>
+                    <p className="text-xs uppercase tracking-wide text-zinc-500">
+                      {new Date(review.updated_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+
+                  <p className="mt-3 text-sm leading-6 text-zinc-700">
+                    {review.comment || 'No written comment provided.'}
+                  </p>
+                </article>
+              ))}
+          </div>
+        </article>
+
+        <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
+          <h2 className="text-2xl font-semibold text-zinc-900">
+            Share Your Review
+          </h2>
+          <p className="mt-1 text-sm text-zinc-600">
+            Only readers who purchased this book can leave or update a review.
+          </p>
+
+          {!canReview && (
+            <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+              Sign in with a reader account to leave a review.
+            </div>
+          )}
+
+          {canReview && (
+            <form
+              className="mt-5 space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                void handleReviewSubmit()
+              }}
+            >
+              <label className="block">
+                <span className="text-sm font-medium text-zinc-700">
+                  Rating
+                </span>
+                <select
+                  value={reviewRating}
+                  onChange={(event) => {
+                    setReviewRating(Number(event.target.value))
+                  }}
+                  className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                >
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <option key={value} value={value}>
+                      {value} star{value === 1 ? '' : 's'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-zinc-700">
+                  Comment
+                </span>
+                <textarea
+                  value={reviewComment}
+                  onChange={(event) => {
+                    setReviewComment(event.target.value)
+                  }}
+                  rows={5}
+                  maxLength={1000}
+                  className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                  placeholder="What stood out to you about this book?"
+                />
+              </label>
+
+              <button
+                type="submit"
+                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                disabled={savingReview}
+              >
+                {savingReview ? 'Saving...' : 'Save Review'}
+              </button>
+            </form>
+          )}
+
+          {reviewsError && (
+            <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {reviewsError}
+            </div>
+          )}
+        </article>
+      </section>
     </section>
   )
 }

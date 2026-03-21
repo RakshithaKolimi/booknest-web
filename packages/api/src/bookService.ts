@@ -29,6 +29,37 @@ export type Book = {
   updated_at: string
 }
 
+export type Review = {
+  id: string
+  book_id: string
+  user_id: string
+  rating: number
+  comment: string
+  created_at: string
+  updated_at: string
+  user?: {
+    id: string
+    first_name?: string
+    last_name?: string
+    email?: string
+  }
+}
+
+export type ReviewInput = {
+  rating: number
+  comment: string
+}
+
+export type ReviewSummary = {
+  average_rating: number
+  total_reviews: number
+}
+
+export type ReviewListResponse = {
+  items: Review[]
+  summary: ReviewSummary
+}
+
 export type BookInput = {
   name: string
   author_name: string
@@ -81,6 +112,17 @@ export async function getBookById(id: string): Promise<Book> {
 
 export async function createBook(payload: BookInput): Promise<Book> {
   return postData<Book, BookInput>('/books', payload)
+}
+
+export async function listBookReviews(id: string): Promise<ReviewListResponse> {
+  return getData<ReviewListResponse>(`/books/${id}/reviews`)
+}
+
+export async function upsertBookReview(
+  id: string,
+  payload: ReviewInput
+): Promise<Review> {
+  return postData<Review, ReviewInput>(`/books/${id}/reviews`, payload)
 }
 
 export async function updateBook(
