@@ -71,16 +71,23 @@ The app currently includes:
 - Public auth pages for login, registration, forgot password, reset password, and reset success
 - Protected user routes for home, books, book detail, cart, orders, and profile
 - Admin-only routes for catalog management and admin order views
+- Book detail reviews with rating summaries and authenticated review submission
 - Token refresh support through `/auth/refresh`, with a legacy fallback to `/refresh`
 
 Authentication state is stored client-side and attached to API requests through the shared Axios client in `packages/api`.
+
+Review behavior:
+
+- The book detail page loads reviews from the backend and shows average rating plus review count.
+- Readers can submit or update a review from the book detail page.
+- The backend only accepts reviews from users who have completed a purchase of that book.
 
 ## Backend contract
 
 This app expects the backend API under `/api/v1` with these route groups:
 
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/reset-password/confirm`
-- Books: `/books`, `/book/:id`
+- Books: `/books`, `/book/:id`, `/books/:id/reviews`
 - Cart: `/cart`, `/cart/items`, `/cart/items/:book_id`, `/cart/clear`
 - Orders: `/orders`, `/orders/checkout`, `/orders/confirm`, `/admin/orders`
 - Catalog: `/authors`, `/categories`, `/publishers`
