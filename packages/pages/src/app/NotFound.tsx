@@ -1,7 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import { usePageTitle } from '../PageTitleProvider'
+
 export default function NotFound(): React.ReactElement {
+  usePageTitle('Page Not Found')
+
   return (
     <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
       <h1 className="text-2xl font-semibold text-zinc-900">Page not found</h1>

@@ -1,26 +1,21 @@
 import { AuthService } from '@booknest/services'
 import '../common/index.css'
 
+import { usePageTitle } from '../../PageTitleProvider'
 import { Button, Header } from '@booknest/ui'
-import React, { useEffect, useState } from 'react'
-import { toast, Toaster } from 'react-hot-toast'
+import React, { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router-dom'
 import { syncAuthSessionWithRefresh } from '@booknest/utils'
 
 export default function Login(): React.ReactElement {
   const navigate = useNavigate()
+  usePageTitle('Login')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
   const [loading, setLoading] = useState(false)
-
-  /**
-   * Runs an effect to set the page title
-   */
-  useEffect(() => {
-    document.title = 'Login'
-  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -92,7 +87,6 @@ export default function Login(): React.ReactElement {
             className="btn-login"
             disabled={loading}
           />
-          <Toaster />
         </form>
       </div>
     </div>

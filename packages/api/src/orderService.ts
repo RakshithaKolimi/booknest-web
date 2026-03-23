@@ -1,4 +1,4 @@
-import { getData, postData } from './request'
+import { getData, postData, putData } from './request'
 
 export type PaymentMethod =
   | 'COD'
@@ -23,8 +23,14 @@ export type OrderCore = {
   total_price: number
   user_id: string
   payment_method?: PaymentMethod
-  payment_status?: 'PENDING' | 'PAID' | 'REFUNDED' | 'FAILED'
-  status: 'PENDING' | 'CANCELLED' | 'COMPLETED'
+  payment_status?:
+    | 'PENDING'
+    | 'PAID'
+    | 'REFUND_INITIATED'
+    | 'REFUNDED'
+    | 'FAILED'
+  status: 'PENDING' | 'FAILED' | 'CANCELLED' | 'COMPLETED'
+  cancellation_reason?: string | null
   created_at: string
   updated_at: string
 }
@@ -56,6 +62,41 @@ export async function confirmPayment(
       success,
     }
   )
+}
+
+export async function cancelOrder(
+  order_id: string,
+  cancellation_reason: string
+): Promise<OrderView> {
+  return postData<OrderView, { order_id: string; cancellation_reason: string }>(
+    '/orders/cancel',
+    {
+      order_id,
+      cancellation_reason,
+    }
+  )
+}
+
+export async function adminUpdateOrderStatus(
+  order_id: string,
+  payload: {
+    status?: 'COMPLETED' | 'CANCELLED'
+    payment_status?: 'REFUNDED'
+    cancellation_reason?: string
+  }
+): Promise<OrderView> {
+  return putData<
+    OrderView,
+    {
+      order_id: string
+      status?: 'COMPLETED' | 'CANCELLED'
+      payment_status?: 'REFUNDED'
+      cancellation_reason?: string
+    }
+  >('/admin/orders/status', {
+    order_id,
+    ...payload,
+  })
 }
 
 export async function listMyOrders(): Promise<OrderView[]> {

@@ -1,24 +1,19 @@
 import '../common/index.css'
 
+import { usePageTitle } from '../../PageTitleProvider'
 import { Button, Header } from '@booknest/ui'
 import { AuthService } from '@booknest/services'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast, Toaster } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 export default function ForgotPassword(): React.ReactElement {
   const navigate = useNavigate()
+  usePageTitle('Forgot Password')
   const [formData, setFormData] = useState({
     email: '',
   })
   const [loading, setLoading] = useState(false)
-
-  /**
-   * Runs an effect to set the page title
-   */
-  useEffect(() => {
-    document.title = 'Forgot Password'
-  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -91,7 +86,6 @@ export default function ForgotPassword(): React.ReactElement {
           />
         </form>
       </div>
-      <Toaster />
     </div>
   )
 }

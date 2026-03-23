@@ -1,13 +1,10 @@
 import { Button } from '@booknest/ui'
-import React, { useEffect } from 'react'
+import React from 'react'
+
+import { usePageTitle } from '../PageTitleProvider'
 
 export default function Login(): React.ReactElement {
-  /**
-   * Runs an effect to set the page title
-   */
-  useEffect(() => {
-    document.title = 'Login'
-  }, [])
+  usePageTitle('Login')
 
   /**
    * Render components

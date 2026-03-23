@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { usePageTitle } from '../PageTitleProvider'
+
 import {
   clearCart,
   getCart,
@@ -26,6 +28,8 @@ const paymentMethods: PaymentMethod[] = [
 ]
 
 export default function Cart(): React.ReactElement {
+  usePageTitle('Cart')
+
   const [cart, setCart] = useState<CartView | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

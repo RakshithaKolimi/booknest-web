@@ -2,6 +2,8 @@ import '../../common/index.css'
 
 import React, { useState } from 'react'
 
+import { usePageTitle } from '../../../PageTitleProvider'
+
 type DialogProps = {
   open: boolean
   onClose: () => void
@@ -9,6 +11,13 @@ type DialogProps = {
 
 export default function Dialog({ open, onClose }: DialogProps) {
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms')
+  usePageTitle(
+    open
+      ? activeTab === 'terms'
+        ? 'Terms & Conditions'
+        : 'Privacy Policy'
+      : undefined
+  )
 
   if (!open) return null
 

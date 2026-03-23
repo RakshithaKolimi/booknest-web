@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
+import { usePageTitle } from '../PageTitleProvider'
+
 import { getRole } from '@booknest/utils'
 
 export default function Home(): React.ReactElement {
   const role = getRole()
+  usePageTitle(role === 'ADMIN' ? 'Admin Workspace' : 'Home')
 
   const cards = useMemo(
     () =>

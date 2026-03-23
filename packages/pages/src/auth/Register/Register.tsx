@@ -1,16 +1,18 @@
 import '../common/index.css'
 
+import { usePageTitle } from '../../PageTitleProvider'
 import { AuthService } from '@booknest/services'
 import { DefaultCountryCode } from '@booknest/utils'
 import { Button, Header } from '@booknest/ui'
-import React, { useEffect, useState } from 'react'
-import { toast, Toaster } from 'react-hot-toast'
+import React, { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router-dom'
 
 import Dialog from './Terms&Privacy/Terms&Privacy'
 
 export default function Register(): React.ReactElement {
   const navigate = useNavigate()
+  usePageTitle('Register')
 
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -23,11 +25,6 @@ export default function Register(): React.ReactElement {
     role: AuthService.UserRoleType.User,
     confirm_password: '',
   })
-
-  useEffect(() => {
-    document.title = 'Register'
-  }, [])
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -176,7 +173,6 @@ export default function Register(): React.ReactElement {
         </form>
 
         <Dialog open={open} onClose={() => setOpen(false)} />
-        <Toaster />
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { usePageTitle } from '../PageTitleProvider'
+
 import {
   createAuthor,
   deleteAuthor,
@@ -62,6 +64,8 @@ const initialPublisherForm: PublisherInput = {
 }
 
 export default function AdminBooks(): React.ReactElement {
+  usePageTitle('Manage Catalog')
+
   const [tab, setTab] = useState<Tab>('books')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -113,7 +117,6 @@ export default function AdminBooks(): React.ReactElement {
   }
 
   useEffect(() => {
-    document.title = 'Manage'
     void loadAll()
   }, [])
 

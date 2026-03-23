@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { toast, Toaster } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
+
+import { usePageTitle } from '../PageTitleProvider'
 
 import { addToCart } from '@booknest/services/cartService'
 import {
@@ -38,6 +40,13 @@ export default function BookDetail(): React.ReactElement {
   const [savingReview, setSavingReview] = useState(false)
   const userId = safeLocalStorage.get('user_id')
   const canReview = !isAdmin && Boolean(userId)
+  const pageTitle = book?.name
+    ? `${book.name}${book.author_name ? ` by ${book.author_name}` : ''}`
+    : loading
+      ? 'Loading Book'
+      : 'Book Details'
+
+  usePageTitle(pageTitle)
 
   useEffect(() => {
     const loadBook = async () => {
@@ -172,7 +181,6 @@ export default function BookDetail(): React.ReactElement {
 
   return (
     <section className="space-y-5">
-      <Toaster />
       <Link
         to="/books"
         className="text-sm font-semibold text-zinc-700 underline"

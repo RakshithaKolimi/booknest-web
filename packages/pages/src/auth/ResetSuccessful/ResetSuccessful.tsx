@@ -1,15 +1,11 @@
 import '../common/index.css'
 
+import { usePageTitle } from '../../PageTitleProvider'
 import { Button, Header } from '@booknest/ui'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 export default function ResetSuccessful(): React.ReactElement {
-  /**
-   * Set the page title
-   */
-  useEffect(() => {
-    document.title = 'Password Reset Successful'
-  }, [])
+  usePageTitle('Password Reset Successful')
 
   /**
    * Render success message

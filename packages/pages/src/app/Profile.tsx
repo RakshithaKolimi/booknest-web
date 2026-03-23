@@ -1,13 +1,13 @@
 import { safeLocalStorage } from '@booknest/utils'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
+
+import { usePageTitle } from '../PageTitleProvider'
 
 import { getRole } from '@booknest/utils'
 
 export default function Profile(): React.ReactElement {
-  useEffect(() => {
-    document.title = 'Profile'
-  }, [])
+  usePageTitle('Profile')
 
   const fullName = safeLocalStorage.get('name') || 'BookNest User'
   const role = getRole() || 'READER'

@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast, Toaster } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 import { addToCart } from '@booknest/services/cartService'
 import {
   type Book,
-  queryBooks,
   type ListBooksQueryParams,
+  type ReviewSummary,
+  listBookReviews,
+  queryBooks,
 } from '@booknest/services/bookService'
 import { getRole } from '@booknest/utils'
+
+import { usePageTitle } from '../PageTitleProvider'
 
 import { formatPrice } from '@booknest/utils'
 
@@ -20,11 +24,15 @@ export default function Books(): React.ReactElement {
   const navigate = useNavigate()
   const role = getRole()
   const isAdmin = role === 'ADMIN'
+  usePageTitle(isAdmin ? 'Manage Books' : 'Books')
 
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addingId, setAddingId] = useState('')
+  const [reviewSummaryByBook, setReviewSummaryByBook] = useState<
+    Record<string, ReviewSummary>
+  >({})
 
   const [mode, setMode] = useState<PaginationMode>('offset')
   const [offset, setOffset] = useState(0)
@@ -70,6 +78,40 @@ export default function Books(): React.ReactElement {
   }, [mode, offset, currentCursor, appliedSearch])
 
   useEffect(() => {
+    if (isAdmin || books.length === 0) {
+      return
+    }
+
+    let active = true
+
+    const loadReviewSummaries = async () => {
+      try {
+        const summaries = await Promise.all(
+          books.map(async (book) => {
+            const response = await listBookReviews(book.id)
+            return [book.id, response.summary] as const
+          })
+        )
+
+        if (!active) return
+
+        setReviewSummaryByBook((current) => ({
+          ...current,
+          ...Object.fromEntries(summaries),
+        }))
+      } catch {
+        if (!active) return
+      }
+    }
+
+    void loadReviewSummaries()
+
+    return () => {
+      active = false
+    }
+  }, [books, isAdmin])
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       const nextSearch = searchInput.trim()
       setOffset(0)
@@ -111,10 +153,17 @@ export default function Books(): React.ReactElement {
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const getReviewLabel = (bookId: string): string | null => {
+    const summary = reviewSummaryByBook[bookId]
+    if (!summary || summary.total_reviews < 1) {
+      return null
+    }
+
+    return `${summary.average_rating.toFixed(1)} stars · ${summary.total_reviews} review${summary.total_reviews === 1 ? '' : 's'}`
+  }
 
   return (
     <section className="space-y-5">
-      <Toaster />
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">Books</h1>
@@ -239,9 +288,16 @@ export default function Books(): React.ReactElement {
                 <span className="font-semibold text-zinc-900">
                   {formatPrice(book.price)}
                 </span>
-                <span className="bn-pill px-2 py-0.5 text-xs">
-                  Stock: {book.available_stock}
-                </span>
+                {isAdmin && (
+                  <span className="bn-pill px-2 py-0.5 text-xs">
+                    Stock: {book.available_stock}
+                  </span>
+                )}
+                {!isAdmin && getReviewLabel(book.id) && (
+                  <span className="text-xs text-zinc-500">
+                    {getReviewLabel(book.id)}
+                  </span>
+                )}
               </div>
 
               <div className="mt-4 flex items-center gap-2">

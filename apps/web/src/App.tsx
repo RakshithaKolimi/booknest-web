@@ -19,6 +19,7 @@ import { Header } from '@booknest/ui'
 import { Logout } from '@booknest/ui'
 import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
 import { clearAuthSession, getRole } from '@booknest/utils'
+import { Toaster } from 'react-hot-toast'
 import React from 'react'
 import {
   NavLink,
@@ -48,6 +49,18 @@ export default function App() {
 
   return (
     <div className="bn-shell">
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 2500,
+          style: {
+            borderRadius: '12px',
+            background: '#18181b',
+            color: '#fafafa',
+          },
+        }}
+        containerStyle={{ top: 88, right: 16 }}
+      />
       {!isAuthPage && (
         <header className="bn-header sticky top-0 z-20">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">

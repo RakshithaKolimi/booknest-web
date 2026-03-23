@@ -1,12 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
+
+import { usePageTitle } from '../PageTitleProvider'
 
 export default function Register(): React.ReactElement {
-  /**
-   * Runs an effect to set the page title
-   */
-  useEffect(() => {
-    document.title = 'Register'
-  }, [])
+  usePageTitle('Register')
 
   return (
     <div className="prose">

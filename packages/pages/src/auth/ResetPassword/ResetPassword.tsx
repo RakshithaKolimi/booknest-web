@@ -1,13 +1,15 @@
 import '../common/index.css'
 
+import { usePageTitle } from '../../PageTitleProvider'
 import { AuthService } from '@booknest/services'
 import { Button, Header } from '@booknest/ui'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { toast, Toaster } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 export default function ResetPassword(): React.ReactElement {
   const navigate = useNavigate()
+  usePageTitle('Reset Password')
   const [searchParams] = useSearchParams()
   const token = useMemo(
     () => searchParams.get('token')?.trim() || '',
@@ -18,10 +20,6 @@ export default function ResetPassword(): React.ReactElement {
     new_password: '',
     confirm_password: '',
   })
-
-  useEffect(() => {
-    document.title = 'Reset Password'
-  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -99,7 +97,6 @@ export default function ResetPassword(): React.ReactElement {
           />
         </form>
       </div>
-      <Toaster />
     </div>
   )
 }
