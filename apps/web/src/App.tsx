@@ -19,8 +19,8 @@ import { Header } from '@booknest/ui'
 import { Logout } from '@booknest/ui'
 import { PrivateRoute, PublicRoute, RoleBasedRoute } from '@booknest/ui-helpers'
 import { clearAuthSession, getRole } from '@booknest/utils'
-import { Toaster } from 'react-hot-toast'
 import React from 'react'
+import { Toaster } from 'react-hot-toast'
 import {
   NavLink,
   Route,

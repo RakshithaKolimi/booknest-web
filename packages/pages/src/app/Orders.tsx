@@ -96,7 +96,8 @@ export default function Orders(): React.ReactElement {
         <div className="space-y-3">
           {orders.map((entry) => {
             const canCancel =
-              entry.order.status === 'PENDING' || entry.order.status === 'FAILED'
+              entry.order.status === 'PENDING' ||
+              entry.order.status === 'FAILED'
 
             return (
               <article
@@ -127,7 +128,8 @@ export default function Orders(): React.ReactElement {
                 <ul className="mt-3 space-y-1 text-sm text-zinc-700">
                   {entry.items.map((item) => (
                     <li key={item.book_id}>
-                      {item.name} x {item.count} ({formatPrice(item.line_total)})
+                      {item.name} x {item.count} ({formatPrice(item.line_total)}
+                      )
                     </li>
                   ))}
                 </ul>
@@ -188,7 +190,9 @@ export default function Orders(): React.ReactElement {
                           <button
                             type="button"
                             className="rounded-md bg-rose-600 px-3 py-1 text-xs font-medium text-white"
-                            onClick={() => void handleCancelOrder(entry.order.id)}
+                            onClick={() =>
+                              void handleCancelOrder(entry.order.id)
+                            }
                           >
                             Confirm Cancel
                           </button>

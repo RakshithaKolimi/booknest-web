@@ -1,7 +1,4 @@
-export {
-  PageTitleProvider,
-  usePageTitle,
-} from './PageTitleProvider'
+export { PageTitleProvider, usePageTitle } from './PageTitleProvider'
 export { default as ForgotPassword } from './auth/ForgotPassword/ForgotPassword'
 export { default as Login } from './auth/Login/Login'
 export { default as Register } from './auth/Register/Register'

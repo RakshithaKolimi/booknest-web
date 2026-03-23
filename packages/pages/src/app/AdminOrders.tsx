@@ -147,7 +147,8 @@ export default function AdminOrders(): React.ReactElement {
                 <ul className="mt-3 space-y-1 text-sm text-zinc-700">
                   {entry.items.map((item) => (
                     <li key={item.book_id}>
-                      {item.name} x {item.count} ({formatPrice(item.line_total)})
+                      {item.name} x {item.count} ({formatPrice(item.line_total)}
+                      )
                     </li>
                   ))}
                 </ul>
@@ -196,7 +197,10 @@ export default function AdminOrders(): React.ReactElement {
                             type="button"
                             className="rounded-md bg-rose-600 px-3 py-1 text-xs font-medium text-white"
                             onClick={() =>
-                              void handleStatusUpdate(entry.order.id, 'CANCELLED')
+                              void handleStatusUpdate(
+                                entry.order.id,
+                                'CANCELLED'
+                              )
                             }
                           >
                             Confirm Cancel
