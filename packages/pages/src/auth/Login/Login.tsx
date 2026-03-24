@@ -1,4 +1,4 @@
-import { AuthService } from '@booknest/services'
+import { AuthService, getErrorMessage } from '@booknest/services'
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
@@ -42,7 +42,7 @@ export default function Login(): React.ReactElement {
       toast.success('Logged in successfully!')
       navigate('/')
     } catch (err: any) {
-      toast.error('Login failed. Please try again.')
+      toast.error(getErrorMessage(err, 'Login failed. Please try again.'))
     } finally {
       setLoading(false)
     }

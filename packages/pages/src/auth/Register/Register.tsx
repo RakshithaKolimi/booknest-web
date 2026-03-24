@@ -1,7 +1,7 @@
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
-import { AuthService } from '@booknest/services'
+import { AuthService, getErrorMessage } from '@booknest/services'
 import { DefaultCountryCode } from '@booknest/utils'
 import { Button, Header } from '@booknest/ui'
 import React, { useState } from 'react'
@@ -22,19 +22,11 @@ export default function Register(): React.ReactElement {
     email: '',
     mobile: '',
     password: '',
-    role: AuthService.UserRoleType.User,
     confirm_password: '',
   })
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      role: e.target.value as AuthService.UserRoleType,
-    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,13 +53,15 @@ export default function Register(): React.ReactElement {
         email: formData.email.trim(),
         mobile: mobileWithCountryCode,
         password: formData.password,
-        role: formData.role,
+        role: AuthService.UserRoleType.User,
       })
 
       toast.success('Account created successfully! Redirecting to login...')
       navigate('/login')
     } catch (err: any) {
-      toast.error('Registration failed. Please try again.')
+      toast.error(
+        getErrorMessage(err, 'Registration failed. Please try again.')
+      )
     } finally {
       setLoading(false)
     }
@@ -139,16 +133,6 @@ export default function Register(): React.ReactElement {
             className="log-in-input"
             required
           />
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleRoleChange}
-            className="log-in-input"
-          >
-            <option value={AuthService.UserRoleType.User}>User</option>
-            <option value={AuthService.UserRoleType.Admin}>Admin</option>
-          </select>
-
           <Button
             label={loading ? 'Signing Up...' : 'Sign Up'}
             className="btn-login"

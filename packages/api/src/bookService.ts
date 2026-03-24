@@ -25,6 +25,8 @@ export type Book = {
   discount_percentage: number
   publisher_id: string
   categories?: BookCategory[]
+  average_rating: number
+  total_reviews: number
   created_at: string
   updated_at: string
 }

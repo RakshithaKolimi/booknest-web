@@ -2,7 +2,7 @@ import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
 import { Button, Header } from '@booknest/ui'
-import { AuthService } from '@booknest/services'
+import { AuthService, getErrorMessage } from '@booknest/services'
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
@@ -44,7 +44,9 @@ export default function ForgotPassword(): React.ReactElement {
         navigate('/reset-successful')
       }
     } catch (err: any) {
-      toast.error('Forgot password failed. Please try again.')
+      toast.error(
+        getErrorMessage(err, 'Forgot password failed. Please try again.')
+      )
     } finally {
       setLoading(false)
     }

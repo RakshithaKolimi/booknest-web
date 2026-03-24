@@ -6,8 +6,6 @@ import { addToCart } from '@booknest/services/cartService'
 import {
   type Book,
   type ListBooksQueryParams,
-  type ReviewSummary,
-  listBookReviews,
   queryBooks,
 } from '@booknest/services/bookService'
 import { getRole } from '@booknest/utils'
@@ -30,9 +28,6 @@ export default function Books(): React.ReactElement {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addingId, setAddingId] = useState('')
-  const [reviewSummaryByBook, setReviewSummaryByBook] = useState<
-    Record<string, ReviewSummary>
-  >({})
 
   const [mode, setMode] = useState<PaginationMode>('offset')
   const [offset, setOffset] = useState(0)
@@ -78,40 +73,6 @@ export default function Books(): React.ReactElement {
   }, [mode, offset, currentCursor, appliedSearch])
 
   useEffect(() => {
-    if (isAdmin || books.length === 0) {
-      return
-    }
-
-    let active = true
-
-    const loadReviewSummaries = async () => {
-      try {
-        const summaries = await Promise.all(
-          books.map(async (book) => {
-            const response = await listBookReviews(book.id)
-            return [book.id, response.summary] as const
-          })
-        )
-
-        if (!active) return
-
-        setReviewSummaryByBook((current) => ({
-          ...current,
-          ...Object.fromEntries(summaries),
-        }))
-      } catch {
-        if (!active) return
-      }
-    }
-
-    void loadReviewSummaries()
-
-    return () => {
-      active = false
-    }
-  }, [books, isAdmin])
-
-  useEffect(() => {
     const timer = window.setTimeout(() => {
       const nextSearch = searchInput.trim()
       setOffset(0)
@@ -153,13 +114,12 @@ export default function Books(): React.ReactElement {
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const getReviewLabel = (bookId: string): string | null => {
-    const summary = reviewSummaryByBook[bookId]
-    if (!summary || summary.total_reviews < 1) {
+  const getReviewLabel = (book: Book): string | null => {
+    if (book.total_reviews < 1) {
       return null
     }
 
-    return `${summary.average_rating.toFixed(1)} stars · ${summary.total_reviews} review${summary.total_reviews === 1 ? '' : 's'}`
+    return `${book.average_rating.toFixed(1)} stars · ${book.total_reviews} review${book.total_reviews === 1 ? '' : 's'}`
   }
 
   return (
@@ -293,9 +253,9 @@ export default function Books(): React.ReactElement {
                     Stock: {book.available_stock}
                   </span>
                 )}
-                {!isAdmin && getReviewLabel(book.id) && (
+                {!isAdmin && getReviewLabel(book) && (
                   <span className="text-xs text-zinc-500">
-                    {getReviewLabel(book.id)}
+                    {getReviewLabel(book)}
                   </span>
                 )}
               </div>

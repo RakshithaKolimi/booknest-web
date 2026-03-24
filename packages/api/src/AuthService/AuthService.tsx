@@ -11,7 +11,15 @@ export type IRegisterInput = {
   last_name: string
   mobile: string
   password: string
-  role: string
+  role: UserRoleType
+}
+
+export type IAdminRegisterInput = {
+  email: string
+  first_name: string
+  last_name: string
+  mobile: string
+  password: string
 }
 
 export type ILoginInput = {
@@ -57,6 +65,12 @@ export async function resetPasswordWithToken(
 
 export async function register(input: IRegisterInput): Promise<string> {
   return postData<string, IRegisterInput>('/register', input)
+}
+
+export async function registerAdmin(
+  input: IAdminRegisterInput
+): Promise<string> {
+  return postData<string, IAdminRegisterInput>('/register-admin', input)
 }
 
 export async function login(input: ILoginInput): Promise<ILoginResponse> {
