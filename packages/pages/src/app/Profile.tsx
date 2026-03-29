@@ -1,5 +1,7 @@
+import { AuthService, getErrorMessage } from '@booknest/services'
 import { safeLocalStorage } from '@booknest/utils'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 
 import { usePageTitle } from '../PageTitleProvider'
@@ -9,9 +11,62 @@ import { getRole } from '@booknest/utils'
 export default function Profile(): React.ReactElement {
   usePageTitle('Profile')
 
-  const fullName = safeLocalStorage.get('name') || 'BookNest User'
+  const userID = safeLocalStorage.get('user_id') || ''
   const role = getRole() || 'READER'
-  const email = safeLocalStorage.get('email') || 'Unavailable'
+  const [user, setUser] = useState({
+    first_name: '',
+    last_name: '',
+    email: safeLocalStorage.get('email') || 'Unavailable',
+    mobile: 'Unavailable',
+    email_verified: true,
+    mobile_verified: true,
+  })
+  const [mobileOTP, setMobileOTP] = useState('')
+  const [loadingProfile, setLoadingProfile] = useState(true)
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [sendingMobile, setSendingMobile] = useState(false)
+  const [verifyingMobile, setVerifyingMobile] = useState(false)
+
+  useEffect(() => {
+    if (!userID) {
+      setLoadingProfile(false)
+      return
+    }
+
+    let active = true
+
+    AuthService.getUser(userID)
+      .then((response) => {
+        if (!active) return
+        setUser({
+          first_name: response.first_name,
+          last_name: response.last_name,
+          email: response.email,
+          mobile: response.mobile,
+          email_verified: response.email_verified,
+          mobile_verified: response.mobile_verified,
+        })
+      })
+      .catch((error: unknown) => {
+        if (!active) return
+        toast.error(getErrorMessage(error, 'Unable to load profile details.'))
+      })
+      .finally(() => {
+        if (active) {
+          setLoadingProfile(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [userID])
+
+  const fullName =
+    `${user.first_name} ${user.last_name}`.trim() ||
+    safeLocalStorage.get('name') ||
+    'BookNest User'
+  const email = user.email
   const initials = fullName
     .split(' ')
     .filter(Boolean)
@@ -22,6 +77,51 @@ export default function Profile(): React.ReactElement {
     month: 'short',
     year: 'numeric',
   })
+
+  const handleResendEmailVerification = async () => {
+    try {
+      setSendingEmail(true)
+      await AuthService.resendEmailVerification(user.email)
+      toast.success('Verification email sent. Check your inbox.')
+    } catch (error: unknown) {
+      toast.error(
+        getErrorMessage(error, 'Unable to resend verification email.')
+      )
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
+  const handleResendMobileOTP = async () => {
+    try {
+      setSendingMobile(true)
+      await AuthService.resendMobileOTP()
+      toast.success('Verification code sent to your mobile.')
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Unable to resend mobile OTP.'))
+    } finally {
+      setSendingMobile(false)
+    }
+  }
+
+  const handleVerifyMobile = async () => {
+    if (!mobileOTP.trim()) {
+      toast.error('Enter the OTP sent to your mobile number.')
+      return
+    }
+
+    try {
+      setVerifyingMobile(true)
+      await AuthService.verifyMobile(mobileOTP.trim())
+      setUser((current) => ({ ...current, mobile_verified: true }))
+      setMobileOTP('')
+      toast.success('Mobile number verified successfully.')
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Unable to verify mobile OTP.'))
+    } finally {
+      setVerifyingMobile(false)
+    }
+  }
 
   return (
     <section className="space-y-4">
@@ -48,6 +148,7 @@ export default function Profile(): React.ReactElement {
                 {fullName}
               </h2>
               <p className="text-sm text-zinc-600">{email}</p>
+              <p className="text-sm text-zinc-600">{user.mobile}</p>
             </div>
           </div>
 
@@ -69,6 +170,82 @@ export default function Profile(): React.ReactElement {
               </dd>
             </div>
           </dl>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-zinc-200 bg-white p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Email Verification
+              </p>
+              <p className="mt-2 text-sm font-semibold text-zinc-900">
+                {loadingProfile
+                  ? 'Loading...'
+                  : user.email_verified
+                    ? 'Verified'
+                    : 'Not verified'}
+              </p>
+              {!loadingProfile && !user.email_verified && (
+                <>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    Send a fresh verification link to your email address.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendEmailVerification}
+                    disabled={sendingEmail}
+                    className="mt-4 inline-flex rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {sendingEmail ? 'Sending...' : 'Resend Verification Email'}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-zinc-200 bg-white p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Mobile Verification
+              </p>
+              <p className="mt-2 text-sm font-semibold text-zinc-900">
+                {loadingProfile
+                  ? 'Loading...'
+                  : user.mobile_verified
+                    ? 'Verified'
+                    : 'Not verified'}
+              </p>
+              {!loadingProfile && !user.mobile_verified && (
+                <>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    Request a new OTP and enter it here to verify your mobile
+                    number.
+                  </p>
+                  <div className="mt-4 flex flex-col gap-3">
+                    <button
+                      type="button"
+                      onClick={handleResendMobileOTP}
+                      disabled={sendingMobile}
+                      className="inline-flex rounded-xl border border-orange-300 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {sendingMobile ? 'Sending...' : 'Send Mobile OTP'}
+                    </button>
+                    <input
+                      type="text"
+                      value={mobileOTP}
+                      onChange={(event) => setMobileOTP(event.target.value)}
+                      placeholder="Enter OTP"
+                      className="rounded-xl border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-orange-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyMobile}
+                      disabled={verifyingMobile}
+                      className="inline-flex rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {verifyingMobile ? 'Verifying...' : 'Verify Mobile'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </article>
 
         <aside className="bn-card-solid rounded-xl p-6">

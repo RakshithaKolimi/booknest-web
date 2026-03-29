@@ -1,4 +1,4 @@
-import { postData } from '../request'
+import { getData, postData } from '../request'
 
 export enum UserRoleType {
   User = 'USER',
@@ -44,6 +44,17 @@ export type ILoginResponse = {
   refresh_token: string
 }
 
+export type IUserProfile = {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  mobile: string
+  role: UserRoleType
+  email_verified: boolean
+  mobile_verified: boolean
+}
+
 export async function forgotPassword(
   input: IForgotPasswordInput
 ): Promise<IForgotPasswordResponse> {
@@ -75,4 +86,35 @@ export async function registerAdmin(
 
 export async function login(input: ILoginInput): Promise<ILoginResponse> {
   return postData<ILoginResponse, ILoginInput>('/login', input)
+}
+
+export async function verifyEmail(token: string): Promise<{ message: string }> {
+  return postData<{ message: string }, { token: string }>('/verify-email', {
+    token,
+  })
+}
+
+export async function verifyMobile(
+  token: string
+): Promise<{ message: string }> {
+  return postData<{ message: string }, { token: string }>('/verify-mobile', {
+    token,
+  })
+}
+
+export async function resendEmailVerification(
+  email?: string
+): Promise<{ message: string }> {
+  return postData<{ message: string }, { email?: string }>(
+    '/resend-email-verification',
+    email ? { email } : {}
+  )
+}
+
+export async function resendMobileOTP(): Promise<{ message: string }> {
+  return postData<{ message: string }>('/resend-mobile-otp')
+}
+
+export async function getUser(userID: string): Promise<IUserProfile> {
+  return getData<IUserProfile>(`/user/${userID}`)
 }

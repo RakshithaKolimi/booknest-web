@@ -14,6 +14,7 @@ import {
   ResetPassword,
   ResetSuccessful,
   UnAuthorized,
+  VerifyEmail,
 } from '@booknest/pages'
 import { Header } from '@booknest/ui'
 import { Logout } from '@booknest/ui'
@@ -38,7 +39,8 @@ export default function App() {
     location.pathname === '/register' ||
     location.pathname === '/forgot-password' ||
     location.pathname === '/reset-password' ||
-    location.pathname === '/reset-successful'
+    location.pathname === '/reset-successful' ||
+    location.pathname === '/verify-email'
 
   const navigate = useNavigate()
 
@@ -136,6 +138,7 @@ export default function App() {
               path="/reset-password"
               element={<PublicRoute element={<ResetPassword />} />}
             />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
             <Route path="/" element={<PrivateRoute element={<Home />} />} />
             <Route
