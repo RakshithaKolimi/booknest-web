@@ -95,10 +95,10 @@ export async function verifyEmail(token: string): Promise<{ message: string }> {
 }
 
 export async function verifyMobile(
-  token: string
+  otp: string
 ): Promise<{ message: string }> {
-  return postData<{ message: string }, { token: string }>('/verify-mobile', {
-    token,
+  return postData<{ message: string }, { otp: string }>('/verify-mobile', {
+    otp,
   })
 }
 
