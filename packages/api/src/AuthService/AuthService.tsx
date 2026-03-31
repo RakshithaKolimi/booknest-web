@@ -94,9 +94,7 @@ export async function verifyEmail(token: string): Promise<{ message: string }> {
   })
 }
 
-export async function verifyMobile(
-  otp: string
-): Promise<{ message: string }> {
+export async function verifyMobile(otp: string): Promise<{ message: string }> {
   return postData<{ message: string }, { otp: string }>('/verify-mobile', {
     otp,
   })
