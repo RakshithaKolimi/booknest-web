@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -16,18 +16,17 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "types": ["vite/client"],
-    "baseUrl": ".",
     "paths": {
-      "@booknest/ui": ["packages/ui/src"],
-      "@booknest/ui/*": ["packages/ui/src/*"],
-      "@booknest/services": ["packages/api/src"],
-      "@booknest/services/*": ["packages/api/src/*"],
-      "@booknest/utils": ["packages/utils/src"],
-      "@booknest/utils/*": ["packages/utils/src/*"],
-      "@booknest/pages": ["packages/pages/src"],
-      "@booknest/pages/*": ["packages/pages/src/*"],
-      "@booknest/ui-helpers": ["packages/ui-helpers/src"],
-      "@booknest/ui-helpers/*": ["packages/ui-helpers/src/*"]
+      "@booknest/ui": ["./packages/ui/src"],
+      "@booknest/ui/*": ["./packages/ui/src/*"],
+      "@booknest/services": ["./packages/api/src"],
+      "@booknest/services/*": ["./packages/api/src/*"],
+      "@booknest/utils": ["./packages/utils/src"],
+      "@booknest/utils/*": ["./packages/utils/src/*"],
+      "@booknest/pages": ["./packages/pages/src"],
+      "@booknest/pages/*": ["./packages/pages/src/*"],
+      "@booknest/ui-helpers": ["./packages/ui-helpers/src"],
+      "@booknest/ui-helpers/*": ["./packages/ui-helpers/src/*"]
     }
   }
 }

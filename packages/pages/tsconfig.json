@@ -4,8 +4,7 @@
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Node"
+    "module": "ESNext"
   },
   "include": ["src", "global.d.ts"]
 }

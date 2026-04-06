@@ -1,4 +1,4 @@
-import { getData, postData } from '../request'
+import { getData, postData, putData } from '../request'
 
 export enum UserRoleType {
   User = 'USER',
@@ -53,6 +53,12 @@ export type IUserProfile = {
   role: UserRoleType
   email_verified: boolean
   mobile_verified: boolean
+  use_sms: boolean
+  created_at: string
+}
+
+export type IUserPreferencesInput = {
+  use_sms: boolean
 }
 
 export async function forgotPassword(
@@ -115,4 +121,14 @@ export async function resendMobileOTP(): Promise<{ message: string }> {
 
 export async function getUser(userID: string): Promise<IUserProfile> {
   return getData<IUserProfile>(`/user/${userID}`)
+}
+
+export async function updateUserPreferences(
+  userID: string,
+  input: IUserPreferencesInput
+): Promise<IUserPreferencesInput> {
+  return putData<IUserPreferencesInput, IUserPreferencesInput>(
+    `/user/${userID}/preferences`,
+    input
+  )
 }

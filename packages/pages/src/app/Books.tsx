@@ -271,7 +271,11 @@ export default function Books(): React.ReactElement {
                     }}
                     disabled={addingId === book.id || book.available_stock < 1}
                   >
-                    {addingId === book.id ? 'Adding...' : 'Add to Cart'}
+                    {addingId === book.id
+                      ? 'Adding...'
+                      : book.available_stock < 1
+                        ? 'Out of Stock'
+                        : 'Add to Cart'}
                   </button>
                 )}
               </div>

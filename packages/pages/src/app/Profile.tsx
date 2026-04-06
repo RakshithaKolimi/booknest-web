@@ -20,12 +20,15 @@ export default function Profile(): React.ReactElement {
     mobile: 'Unavailable',
     email_verified: true,
     mobile_verified: true,
+    use_sms: false,
+    created_at: '',
   })
   const [mobileOTP, setMobileOTP] = useState('')
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [sendingEmail, setSendingEmail] = useState(false)
   const [sendingMobile, setSendingMobile] = useState(false)
   const [verifyingMobile, setVerifyingMobile] = useState(false)
+  const [savingPreferences, setSavingPreferences] = useState(false)
 
   useEffect(() => {
     if (!userID) {
@@ -45,6 +48,8 @@ export default function Profile(): React.ReactElement {
           mobile: response.mobile,
           email_verified: response.email_verified,
           mobile_verified: response.mobile_verified,
+          use_sms: response.use_sms,
+          created_at: response.created_at,
         })
       })
       .catch((error: unknown) => {
@@ -73,10 +78,17 @@ export default function Profile(): React.ReactElement {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() || '')
     .join('')
-  const joinedDate = new Date().toLocaleDateString('en-US', {
-    month: 'short',
-    year: 'numeric',
-  })
+  const joinedDate = (() => {
+    if (!user.created_at) return 'Unavailable'
+
+    const createdAt = new Date(user.created_at)
+    if (Number.isNaN(createdAt.getTime())) return 'Unavailable'
+
+    return createdAt.toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    })
+  })()
 
   const handleResendEmailVerification = async () => {
     try {
@@ -120,6 +132,34 @@ export default function Profile(): React.ReactElement {
       toast.error(getErrorMessage(error, 'Unable to verify mobile OTP.'))
     } finally {
       setVerifyingMobile(false)
+    }
+  }
+
+  const handleNotificationPreferenceChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!userID) return
+
+    const nextValue = event.target.checked
+    const previousValue = user.use_sms
+
+    setUser((current) => ({ ...current, use_sms: nextValue }))
+
+    try {
+      setSavingPreferences(true)
+      await AuthService.updateUserPreferences(userID, { use_sms: nextValue })
+      toast.success(
+        nextValue
+          ? 'SMS notifications enabled for your account.'
+          : 'SMS notifications turned off.'
+      )
+    } catch (error: unknown) {
+      setUser((current) => ({ ...current, use_sms: previousValue }))
+      toast.error(
+        getErrorMessage(error, 'Unable to update notification preference.')
+      )
+    } finally {
+      setSavingPreferences(false)
     }
   }
 
@@ -245,6 +285,37 @@ export default function Profile(): React.ReactElement {
                 </>
               )}
             </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Notification Preference
+            </p>
+            <label className="mt-3 flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={user.use_sms}
+                onChange={handleNotificationPreferenceChange}
+                disabled={loadingProfile || savingPreferences}
+                className="mt-1 h-4 w-4 rounded border-zinc-300 text-orange-600 focus:ring-orange-500 disabled:cursor-not-allowed"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-zinc-900">
+                  Send me SMS updates
+                </span>
+                <span className="mt-1 block text-sm text-zinc-600">
+                  Includes order-related SMS notifications. Leave this unchecked
+                  to stop SMS messages.
+                </span>
+              </span>
+            </label>
+            <p className="mt-3 text-xs text-zinc-500">
+              {savingPreferences
+                ? 'Saving your preference...'
+                : user.use_sms
+                  ? 'SMS notifications are currently enabled.'
+                  : 'SMS notifications are currently turned off.'}
+            </p>
           </div>
         </article>
 

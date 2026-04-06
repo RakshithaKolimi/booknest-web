@@ -230,9 +230,6 @@ export default function BookDetail(): React.ReactElement {
               Price: {formatPrice(book.price)}
             </span>
             <span className="rounded-md bg-zinc-100 px-3 py-1 text-zinc-700">
-              Stock: {book.available_stock}
-            </span>
-            <span className="rounded-md bg-zinc-100 px-3 py-1 text-zinc-700">
               ISBN: {book.isbn || 'N/A'}
             </span>
           </div>
@@ -275,7 +272,11 @@ export default function BookDetail(): React.ReactElement {
                 onClick={() => void handleAddToCart()}
                 disabled={adding || book.available_stock < 1}
               >
-                {adding ? 'Adding...' : 'Add to Cart'}
+                {adding
+                  ? 'Adding...'
+                  : book.available_stock < 1
+                    ? 'Out of Stock'
+                    : 'Add to Cart'}
               </button>
             </div>
           )}
