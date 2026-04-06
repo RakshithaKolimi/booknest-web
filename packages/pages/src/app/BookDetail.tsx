@@ -4,15 +4,15 @@ import { toast } from 'react-hot-toast'
 
 import { usePageTitle } from '../PageTitleProvider'
 
-import { addToCart } from '@booknest/services/cartService'
 import {
+  addToCart,
   type Book,
   type Review,
   type ReviewListResponse,
   getBookById,
   listBookReviews,
   upsertBookReview,
-} from '@booknest/services/bookService'
+} from '@booknest/services'
 import { getRole, safeLocalStorage } from '@booknest/utils'
 import { formatPrice } from '@booknest/utils'
 

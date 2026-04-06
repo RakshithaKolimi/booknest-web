@@ -13,6 +13,9 @@
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "build": "tsup src/index.ts --format cjs,esm --dts"
   },
+  "dependencies": {
+    "@booknest/utils": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.4.0"
   },

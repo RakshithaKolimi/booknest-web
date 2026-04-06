@@ -188,6 +188,10 @@ importers:
         version: 5.9.3
 
   packages/ui:
+    dependencies:
+      '@booknest/utils':
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       typescript:
         specifier: ^5.4.0

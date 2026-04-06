@@ -4,34 +4,28 @@ import { usePageTitle } from '../PageTitleProvider'
 
 import {
   createAuthor,
-  deleteAuthor,
-  listAuthors,
-  type Author,
-  updateAuthor,
-} from '@booknest/services/authorService'
-import {
   createBook,
+  createCategory,
+  createPublisher,
+  deleteAuthor,
   deleteBook,
+  deleteCategory,
+  deletePublisher,
+  listAuthors,
   listBooks,
+  listCategories,
+  listPublishers,
+  type Author,
   type Book,
   type BookInput,
-  updateBook,
-} from '@booknest/services/bookService'
-import {
-  createPublisher,
-  deletePublisher,
-  listPublishers,
+  type Category,
   type Publisher,
   type PublisherInput,
-  updatePublisher,
-} from '@booknest/services/publisherService'
-import {
-  createCategory,
-  deleteCategory,
-  listCategories,
-  type Category,
+  updateAuthor,
+  updateBook,
   updateCategory,
-} from '@booknest/services/categoryService'
+  updatePublisher,
+} from '@booknest/services'
 import { formatPrice } from '@booknest/utils'
 
 type Tab = 'books' | 'publishers' | 'authors' | 'categories'

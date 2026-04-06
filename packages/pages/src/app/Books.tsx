@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 
-import { addToCart } from '@booknest/services/cartService'
 import {
+  addToCart,
   type Book,
   type ListBooksQueryParams,
   queryBooks,
-} from '@booknest/services/bookService'
+} from '@booknest/services'
 import { getRole } from '@booknest/utils'
 
 import { usePageTitle } from '../PageTitleProvider'

@@ -7,15 +7,13 @@ import {
   clearCart,
   getCart,
   removeCartItem,
-  type CartView,
-  updateCartItem,
-} from '@booknest/services/cartService'
-import {
   checkout,
   confirmPayment,
+  type CartView,
   type OrderView,
   type PaymentMethod,
-} from '@booknest/services/orderService'
+  updateCartItem,
+} from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
 

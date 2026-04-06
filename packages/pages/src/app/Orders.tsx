@@ -7,7 +7,7 @@ import {
   confirmPayment,
   listMyOrders,
   type OrderView,
-} from '@booknest/services/orderService'
+} from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
 

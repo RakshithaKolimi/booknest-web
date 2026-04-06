@@ -6,7 +6,7 @@ import {
   adminUpdateOrderStatus,
   listAllOrders,
   type OrderView,
-} from '@booknest/services/orderService'
+} from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
 
