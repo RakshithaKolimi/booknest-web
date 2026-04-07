@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { usePageTitle } from '../PageTitleProvider'
 
-import {
-  cancelOrder,
-  confirmPayment,
-  listMyOrders,
-  type OrderView,
-} from '@booknest/services'
+import { type OrderView } from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
+import {
+  getQueryErrorMessage,
+  useCancelOrderMutation,
+  useConfirmPaymentMutation,
+  useMyOrdersQuery,
+} from '../query/hooks'
 
 export default function Orders(): React.ReactElement {
   usePageTitle('Orders')
 
-  const [orders, setOrders] = useState<OrderView[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  // Initialise UI state for the inline cancellation flow.
   const [cancelReasonByOrder, setCancelReasonByOrder] = useState<
     Record<string, string>
   >({})
@@ -24,48 +23,49 @@ export default function Orders(): React.ReactElement {
     Record<string, boolean>
   >({})
 
-  const loadOrders = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await listMyOrders()
-      setOrders(data)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to load orders')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadOrders()
-  }, [])
+  // Call query functions before deriving the request status shown in the UI.
+  const ordersQuery = useMyOrdersQuery()
+  const confirmPaymentMutation = useConfirmPaymentMutation()
+  const cancelOrderMutation = useCancelOrderMutation()
+  const orders = ordersQuery.data ?? []
+  const loading = ordersQuery.isLoading
+  const error = ordersQuery.isError
+    ? getQueryErrorMessage(ordersQuery.error, 'Failed to load orders')
+    : confirmPaymentMutation.isError
+      ? getQueryErrorMessage(
+          confirmPaymentMutation.error,
+          'Unable to update order payment'
+        )
+      : cancelOrderMutation.isError
+        ? getQueryErrorMessage(
+            cancelOrderMutation.error,
+            'Unable to cancel order'
+          )
+        : ''
 
   const handleConfirmPayment = async (orderId: string, success: boolean) => {
-    setError('')
     try {
-      await confirmPayment(orderId, success)
-      await loadOrders()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to update order payment')
+      await confirmPaymentMutation.mutateAsync({ orderId, success })
+    } catch {
+      return
     }
   }
 
   const handleCancelOrder = async (orderId: string) => {
     const cancellationReason = (cancelReasonByOrder[orderId] || '').trim()
     if (!cancellationReason) {
-      setError('Please enter a cancellation reason')
       return
     }
 
-    setError('')
     try {
-      await cancelOrder(orderId, cancellationReason)
+      await cancelOrderMutation.mutateAsync({
+        orderId,
+        cancellationReason,
+      })
       setCancelReasonByOrder((current) => ({ ...current, [orderId]: '' }))
       setShowCancelBoxByOrder((current) => ({ ...current, [orderId]: false }))
-      await loadOrders()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to cancel order')
+    } catch {
+      return
     }
   }
 

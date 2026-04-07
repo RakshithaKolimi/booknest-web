@@ -1,7 +1,8 @@
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
-import { AuthService } from '@booknest/services'
+import { getErrorMessage } from '@booknest/services'
+import { useResetPasswordMutation } from '../../query/hooks'
 import { Button, Header } from '@booknest/ui'
 import React, { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -15,11 +16,11 @@ export default function ResetPassword(): React.ReactElement {
     () => searchParams.get('token')?.trim() || '',
     [searchParams]
   )
-  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     new_password: '',
     confirm_password: '',
   })
+  const resetPasswordMutation = useResetPasswordMutation()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -45,14 +46,14 @@ export default function ResetPassword(): React.ReactElement {
     }
 
     try {
-      setLoading(true)
-      await AuthService.resetPasswordWithToken(token, formData.new_password)
+      await resetPasswordMutation.mutateAsync({
+        token,
+        newPassword: formData.new_password,
+      })
       toast.success('Password reset successful. Please log in.')
       navigate('/login')
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Password reset failed')
-    } finally {
-      setLoading(false)
+      toast.error(getErrorMessage(err, 'Password reset failed'))
     }
   }
 
@@ -90,10 +91,12 @@ export default function ResetPassword(): React.ReactElement {
           </p>
 
           <Button
-            label={loading ? 'Resetting...' : 'Reset Password'}
+            label={
+              resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'
+            }
             className="btn-login"
             type="submit"
-            disabled={loading}
+            disabled={resetPasswordMutation.isPending}
           />
         </form>
       </div>

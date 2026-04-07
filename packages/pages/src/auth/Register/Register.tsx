@@ -1,6 +1,7 @@
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
+import { useRegisterMutation } from '../../query/hooks'
 import { AuthService, getErrorMessage } from '@booknest/services'
 import { DefaultCountryCode } from '@booknest/utils'
 import { Button, Header } from '@booknest/ui'
@@ -15,7 +16,6 @@ export default function Register(): React.ReactElement {
   usePageTitle('Register')
 
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -24,6 +24,7 @@ export default function Register(): React.ReactElement {
     password: '',
     confirm_password: '',
   })
+  const registerMutation = useRegisterMutation()
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -43,11 +44,9 @@ export default function Register(): React.ReactElement {
     }
 
     try {
-      setLoading(true)
-
       const mobileWithCountryCode = DefaultCountryCode + formData.mobile
 
-      await AuthService.register({
+      await registerMutation.mutateAsync({
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         email: formData.email.trim(),
@@ -62,8 +61,6 @@ export default function Register(): React.ReactElement {
       toast.error(
         getErrorMessage(err, 'Registration failed. Please try again.')
       )
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -134,10 +131,10 @@ export default function Register(): React.ReactElement {
             required
           />
           <Button
-            label={loading ? 'Signing Up...' : 'Sign Up'}
+            label={registerMutation.isPending ? 'Signing Up...' : 'Sign Up'}
             className="btn-login"
             type="submit"
-            disabled={loading}
+            disabled={registerMutation.isPending}
           />
 
           <p className="caption-text">

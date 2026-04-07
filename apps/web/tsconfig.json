@@ -3,7 +3,7 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ESNext"], // ✅ allows localStorage, window, document, etc.
     "jsx": "react-jsx", // ✅ new JSX transform
-    "moduleResolution": "Node", // ✅ proper module lookup in monorepo
+    "moduleResolution": "bundler", // ✅ proper module lookup in monorepo
     "strict": true, // ✅ enables strict type checking
     "esModuleInterop": true, // ✅ ensures clean imports from commonjs packages
     "skipLibCheck": true, // ✅ faster build (recommended for monorepos)

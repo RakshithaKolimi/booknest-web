@@ -2,6 +2,7 @@ import { AuthService, getErrorMessage } from '@booknest/services'
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
+import { useLoginMutation } from '../../query/hooks'
 import { Button, Header } from '@booknest/ui'
 import React, { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -9,13 +10,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { syncAuthSessionWithRefresh } from '@booknest/utils'
 
 export default function Login(): React.ReactElement {
+  // Initialise navigation before setting up form and query state.
   const navigate = useNavigate()
   usePageTitle('Login')
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
-  const [loading, setLoading] = useState(false)
+
+  // Call query functions after local form state is ready.
+  const loginMutation = useLoginMutation()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -31,9 +36,7 @@ export default function Login(): React.ReactElement {
     }
 
     try {
-      setLoading(true)
-
-      const response = await AuthService.login({
+      const response = await loginMutation.mutateAsync({
         email: formData.email.trim(),
         password: formData.password,
       })
@@ -43,14 +46,9 @@ export default function Login(): React.ReactElement {
       navigate('/')
     } catch (err: any) {
       toast.error(getErrorMessage(err, 'Login failed. Please try again.'))
-    } finally {
-      setLoading(false)
     }
   }
 
-  /**
-   * Render components
-   */
   return (
     <div className="form">
       <div className="form-container">
@@ -83,9 +81,9 @@ export default function Login(): React.ReactElement {
             Forgot Password?
           </Link>
           <Button
-            label={loading ? 'Logging in' : 'Login'}
+            label={loginMutation.isPending ? 'Logging in' : 'Login'}
             className="btn-login"
-            disabled={loading}
+            disabled={loginMutation.isPending}
           />
         </form>
       </div>

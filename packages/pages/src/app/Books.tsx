@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 
-import {
-  addToCart,
-  type Book,
-  type ListBooksQueryParams,
-  queryBooks,
-} from '@booknest/services'
+import { type Book, type ListBooksQueryParams } from '@booknest/services'
 import { getRole } from '@booknest/utils'
 
 import { usePageTitle } from '../PageTitleProvider'
+import {
+  getQueryErrorMessage,
+  useAddToCartMutation,
+  useBooksQuery,
+} from '../query/hooks'
 
 import { formatPrice } from '@booknest/utils'
 
@@ -19,15 +19,11 @@ type PaginationMode = 'offset' | 'cursor'
 const PAGE_SIZE = 12
 
 export default function Books(): React.ReactElement {
+  // Initialise variables used across pagination and navigation.
   const navigate = useNavigate()
   const role = getRole()
   const isAdmin = role === 'ADMIN'
   usePageTitle(isAdmin ? 'Manage Books' : 'Books')
-
-  const [books, setBooks] = useState<Book[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [addingId, setAddingId] = useState('')
 
   const [mode, setMode] = useState<PaginationMode>('offset')
   const [offset, setOffset] = useState(0)
@@ -36,43 +32,44 @@ export default function Books(): React.ReactElement {
   const [currentCursor, setCurrentCursor] = useState('')
   const [total, setTotal] = useState(0)
   const [hasMore, setHasMore] = useState(false)
-
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
 
-  const loadBooks = async () => {
-    setLoading(true)
-    setError('')
-
-    const params: ListBooksQueryParams = {
+  const params = useMemo<ListBooksQueryParams>(
+    () => ({
       limit: PAGE_SIZE,
       search: appliedSearch || undefined,
-    }
+      ...(mode === 'offset'
+        ? { offset }
+        : currentCursor
+          ? { cursor: currentCursor }
+          : {}),
+    }),
+    [appliedSearch, currentCursor, mode, offset]
+  )
 
-    if (mode === 'offset') {
-      params.offset = offset
-    } else if (currentCursor) {
-      params.cursor = currentCursor
-    }
-
-    try {
-      const result = await queryBooks(params)
-      setBooks(result.items)
-      setTotal(result.total)
-      setHasMore(result.has_more)
-      setNextCursor(result.next_cursor || '')
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to load books')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadBooks()
-  }, [mode, offset, currentCursor, appliedSearch])
+  // Call query functions after the pagination and search inputs are ready.
+  const booksQuery = useBooksQuery(params)
+  const addToCartMutation = useAddToCartMutation()
+  const books = booksQuery.data?.items ?? []
+  const loading = booksQuery.isLoading || booksQuery.isFetching
+  const error = booksQuery.isError
+    ? getQueryErrorMessage(booksQuery.error, 'Failed to load books')
+    : addToCartMutation.isError
+      ? getQueryErrorMessage(
+          addToCartMutation.error,
+          'Unable to add book to cart'
+        )
+      : ''
 
   useEffect(() => {
+    setTotal(booksQuery.data?.total ?? 0)
+    setHasMore(booksQuery.data?.has_more ?? false)
+    setNextCursor(booksQuery.data?.next_cursor || '')
+  }, [booksQuery.data])
+
+  useEffect(() => {
+    // Debounce search updates so we do not refetch on every keystroke.
     const timer = window.setTimeout(() => {
       const nextSearch = searchInput.trim()
       setOffset(0)
@@ -95,16 +92,11 @@ export default function Books(): React.ReactElement {
   }
 
   const handleAddToCart = async (bookId: string) => {
-    setAddingId(bookId)
-    setError('')
-
     try {
-      await addToCart(bookId, 1)
+      await addToCartMutation.mutateAsync({ bookId, count: 1 })
       toast.success('Book added to cart successfully')
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to add book to cart')
-    } finally {
-      setAddingId('')
+    } catch (e: unknown) {
+      toast.error(getQueryErrorMessage(e, 'Unable to add book to cart'))
     }
   }
 
@@ -269,9 +261,13 @@ export default function Books(): React.ReactElement {
                       event.stopPropagation()
                       void handleAddToCart(book.id)
                     }}
-                    disabled={addingId === book.id || book.available_stock < 1}
+                    disabled={
+                      addToCartMutation.isPending ||
+                      book.available_stock < 1
+                    }
                   >
-                    {addingId === book.id
+                    {addToCartMutation.isPending &&
+                    addToCartMutation.variables?.bookId === book.id
                       ? 'Adding...'
                       : book.available_stock < 1
                         ? 'Out of Stock'

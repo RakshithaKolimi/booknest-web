@@ -1,30 +1,30 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { usePageTitle } from '../PageTitleProvider'
+import {
+  getQueryErrorMessage,
+  useAdminCatalogQuery,
+  useCreateAuthorMutation,
+  useCreateBookMutation,
+  useCreateCategoryMutation,
+  useCreatePublisherMutation,
+  useDeleteAuthorMutation,
+  useDeleteBookMutation,
+  useDeleteCategoryMutation,
+  useDeletePublisherMutation,
+  useUpdateAuthorMutation,
+  useUpdateBookMutation,
+  useUpdateCategoryMutation,
+  useUpdatePublisherMutation,
+} from '../query/hooks'
 
 import {
-  createAuthor,
-  createBook,
-  createCategory,
-  createPublisher,
-  deleteAuthor,
-  deleteBook,
-  deleteCategory,
-  deletePublisher,
-  listAuthors,
-  listBooks,
-  listCategories,
-  listPublishers,
   type Author,
   type Book,
   type BookInput,
   type Category,
   type Publisher,
   type PublisherInput,
-  updateAuthor,
-  updateBook,
-  updateCategory,
-  updatePublisher,
 } from '@booknest/services'
 import { formatPrice } from '@booknest/utils'
 
@@ -60,21 +60,12 @@ const initialPublisherForm: PublisherInput = {
 export default function AdminBooks(): React.ReactElement {
   usePageTitle('Manage Catalog')
 
+  // Initialise variables and form state for each admin management panel.
   const [tab, setTab] = useState<Tab>('books')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  const [books, setBooks] = useState<Book[]>([])
-  const [authors, setAuthors] = useState<Author[]>([])
-  const [publishers, setPublishers] = useState<Publisher[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-
   const [editingBookId, setEditingBookId] = useState('')
   const [editingAuthorId, setEditingAuthorId] = useState('')
   const [editingPublisherId, setEditingPublisherId] = useState('')
   const [editingCategoryId, setEditingCategoryId] = useState('')
-
   const [bookForm, setBookForm] = useState(initialBookForm)
   const [authorName, setAuthorName] = useState('')
   const [bookSearch, setBookSearch] = useState('')
@@ -84,35 +75,95 @@ export default function AdminBooks(): React.ReactElement {
   const [authorSearch, setAuthorSearch] = useState('')
   const [publisherSearch, setPublisherSearch] = useState('')
 
-  const loadAll = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const [bookData, authorData, publisherData, categoryData] =
-        await Promise.all([
-          listBooks(),
-          listAuthors({
-            limit: 500,
-          }),
-          listPublishers({
-            limit: 500,
-          }),
-          listCategories(),
-        ])
-      setBooks(bookData)
-      setAuthors(authorData)
-      setPublishers(publisherData)
-      setCategories(categoryData)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to load management data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadAll()
-  }, [])
+  // Call query functions and mutations before computing filtered datasets.
+  const catalogQuery = useAdminCatalogQuery()
+  const createBookMutation = useCreateBookMutation()
+  const updateBookMutation = useUpdateBookMutation()
+  const deleteBookMutation = useDeleteBookMutation()
+  const createAuthorMutation = useCreateAuthorMutation()
+  const updateAuthorMutation = useUpdateAuthorMutation()
+  const deleteAuthorMutation = useDeleteAuthorMutation()
+  const createPublisherMutation = useCreatePublisherMutation()
+  const updatePublisherMutation = useUpdatePublisherMutation()
+  const deletePublisherMutation = useDeletePublisherMutation()
+  const createCategoryMutation = useCreateCategoryMutation()
+  const updateCategoryMutation = useUpdateCategoryMutation()
+  const deleteCategoryMutation = useDeleteCategoryMutation()
+  const books = catalogQuery.data?.books ?? []
+  const authors = catalogQuery.data?.authors ?? []
+  const publishers = catalogQuery.data?.publishers ?? []
+  const categories = catalogQuery.data?.categories ?? []
+  const loading = catalogQuery.isLoading
+  const saving =
+    createBookMutation.isPending ||
+    updateBookMutation.isPending ||
+    deleteBookMutation.isPending ||
+    createAuthorMutation.isPending ||
+    updateAuthorMutation.isPending ||
+    deleteAuthorMutation.isPending ||
+    createPublisherMutation.isPending ||
+    updatePublisherMutation.isPending ||
+    deletePublisherMutation.isPending ||
+    createCategoryMutation.isPending ||
+    updateCategoryMutation.isPending ||
+    deleteCategoryMutation.isPending
+  const error = catalogQuery.isError
+    ? getQueryErrorMessage(
+        catalogQuery.error,
+        'Failed to load management data'
+      )
+    : createBookMutation.isError
+      ? getQueryErrorMessage(createBookMutation.error, 'Failed to save book')
+      : updateBookMutation.isError
+        ? getQueryErrorMessage(updateBookMutation.error, 'Failed to save book')
+        : deleteBookMutation.isError
+          ? getQueryErrorMessage(deleteBookMutation.error, 'Failed to delete book')
+          : createAuthorMutation.isError
+            ? getQueryErrorMessage(
+                createAuthorMutation.error,
+                'Failed to save author'
+              )
+            : updateAuthorMutation.isError
+              ? getQueryErrorMessage(
+                  updateAuthorMutation.error,
+                  'Failed to save author'
+                )
+              : deleteAuthorMutation.isError
+                ? getQueryErrorMessage(
+                    deleteAuthorMutation.error,
+                    'Failed to delete author'
+                  )
+                : createPublisherMutation.isError
+                  ? getQueryErrorMessage(
+                      createPublisherMutation.error,
+                      'Failed to save publisher'
+                    )
+                  : updatePublisherMutation.isError
+                    ? getQueryErrorMessage(
+                        updatePublisherMutation.error,
+                        'Failed to save publisher'
+                      )
+                    : deletePublisherMutation.isError
+                      ? getQueryErrorMessage(
+                          deletePublisherMutation.error,
+                          'Failed to delete publisher'
+                        )
+                      : createCategoryMutation.isError
+                        ? getQueryErrorMessage(
+                            createCategoryMutation.error,
+                            'Failed to save category'
+                          )
+                        : updateCategoryMutation.isError
+                          ? getQueryErrorMessage(
+                              updateCategoryMutation.error,
+                              'Failed to save category'
+                            )
+                          : deleteCategoryMutation.isError
+                            ? getQueryErrorMessage(
+                                deleteCategoryMutation.error,
+                                'Failed to delete category'
+                              )
+                            : ''
 
   const filteredAuthors = useMemo(() => {
     const keyword = authorSearch.trim().toLowerCase()
@@ -185,7 +236,6 @@ export default function AdminBooks(): React.ReactElement {
           (bookForm.author_name || '').trim().toLowerCase()
       )
     if (!selectedAuthor) {
-      setError('Please select an author')
       return
     }
     const selectedPublisher =
@@ -196,12 +246,9 @@ export default function AdminBooks(): React.ReactElement {
           publisherName.trim().toLowerCase()
       )
     if (!selectedPublisher) {
-      setError('Please select a publisher')
       return
     }
 
-    setSaving(true)
-    setError('')
     try {
       const payload: BookInput = {
         ...bookForm,
@@ -213,121 +260,104 @@ export default function AdminBooks(): React.ReactElement {
         isbn: bookForm.isbn || undefined,
       }
       if (editingBookId) {
-        await updateBook(editingBookId, payload)
+        await updateBookMutation.mutateAsync({ id: editingBookId, payload })
       } else {
-        await createBook(payload)
+        await createBookMutation.mutateAsync(payload)
       }
       resetBookForm()
-      await loadAll()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to save book')
-    } finally {
-      setSaving(false)
+    } catch {
+      return
     }
   }
 
   const onSubmitAuthor = async (event: React.FormEvent) => {
     event.preventDefault()
-    setSaving(true)
-    setError('')
     try {
       if (editingAuthorId) {
-        await updateAuthor(editingAuthorId, { name: authorName })
+        await updateAuthorMutation.mutateAsync({
+          id: editingAuthorId,
+          payload: { name: authorName },
+        })
       } else {
-        await createAuthor({ name: authorName })
+        await createAuthorMutation.mutateAsync({ name: authorName })
       }
       resetAuthorForm()
-      await loadAll()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to save author')
-    } finally {
-      setSaving(false)
+    } catch {
+      return
     }
   }
 
   const onSubmitPublisher = async (event: React.FormEvent) => {
     event.preventDefault()
-    setSaving(true)
-    setError('')
     try {
       if (editingPublisherId) {
-        await updatePublisher(editingPublisherId, publisherForm)
+        await updatePublisherMutation.mutateAsync({
+          id: editingPublisherId,
+          payload: publisherForm,
+        })
       } else {
-        await createPublisher(publisherForm)
+        await createPublisherMutation.mutateAsync(publisherForm)
       }
       resetPublisherForm()
-      await loadAll()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to save publisher')
-    } finally {
-      setSaving(false)
+    } catch {
+      return
     }
   }
 
   const onSubmitCategory = async (event: React.FormEvent) => {
     event.preventDefault()
-    setSaving(true)
-    setError('')
     try {
       if (editingCategoryId) {
-        await updateCategory(editingCategoryId, { name: categoryName })
+        await updateCategoryMutation.mutateAsync({
+          id: editingCategoryId,
+          name: categoryName,
+        })
       } else {
-        await createCategory({ name: categoryName })
+        await createCategoryMutation.mutateAsync({ name: categoryName })
       }
       resetCategoryForm()
-      await loadAll()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to save category')
-    } finally {
-      setSaving(false)
+    } catch {
+      return
     }
   }
 
   const onDeleteBook = async (id: string) => {
     if (!window.confirm('Delete this book?')) return
-    setError('')
     try {
-      await deleteBook(id)
-      await loadAll()
+      await deleteBookMutation.mutateAsync(id)
       if (editingBookId === id) resetBookForm()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to delete book')
+    } catch {
+      return
     }
   }
 
   const onDeleteAuthor = async (id: string) => {
     if (!window.confirm('Delete this author?')) return
-    setError('')
     try {
-      await deleteAuthor(id)
-      await loadAll()
+      await deleteAuthorMutation.mutateAsync(id)
       if (editingAuthorId === id) resetAuthorForm()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to delete author')
+    } catch {
+      return
     }
   }
 
   const onDeletePublisher = async (id: string) => {
     if (!window.confirm('Delete this publisher?')) return
-    setError('')
     try {
-      await deletePublisher(id)
-      await loadAll()
+      await deletePublisherMutation.mutateAsync(id)
       if (editingPublisherId === id) resetPublisherForm()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to delete publisher')
+    } catch {
+      return
     }
   }
 
   const onDeleteCategory = async (id: string) => {
     if (!window.confirm('Delete this category?')) return
-    setError('')
     try {
-      await deleteCategory(id)
-      await loadAll()
+      await deleteCategoryMutation.mutateAsync(id)
       if (editingCategoryId === id) resetCategoryForm()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to delete category')
+    } catch {
+      return
     }
   }
 
@@ -383,6 +413,10 @@ export default function AdminBooks(): React.ReactElement {
     setEditingCategoryId(category.id)
     setCategoryName(category.name)
   }
+
+  /**
+   * Components
+   */
 
   return (
     <section className="space-y-5">

@@ -1,45 +1,73 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 
 import { usePageTitle } from '../PageTitleProvider'
 
 import {
-  addToCart,
   type Book,
   type Review,
   type ReviewListResponse,
-  getBookById,
-  listBookReviews,
-  upsertBookReview,
 } from '@booknest/services'
 import { getRole, safeLocalStorage } from '@booknest/utils'
 import { formatPrice } from '@booknest/utils'
+import {
+  getQueryErrorMessage,
+  useAddToCartMutation,
+  useBookQuery,
+  useBookReviewsQuery,
+  useUpsertBookReviewMutation,
+} from '../query/hooks'
 
 export default function BookDetail(): React.ReactElement {
+  // Initialise variables used to determine access and route context.
   const { id } = useParams<{ id: string }>()
   const role = getRole()
   const isAdmin = role === 'ADMIN'
-
-  const [book, setBook] = useState<Book | null>(null)
-  const [quantity, setQuantity] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [adding, setAdding] = useState(false)
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [reviewSummary, setReviewSummary] = useState<
-    ReviewListResponse['summary']
-  >({
-    average_rating: 0,
-    total_reviews: 0,
-  })
-  const [reviewsLoading, setReviewsLoading] = useState(true)
-  const [reviewsError, setReviewsError] = useState('')
-  const [reviewRating, setReviewRating] = useState(5)
-  const [reviewComment, setReviewComment] = useState('')
-  const [savingReview, setSavingReview] = useState(false)
   const userId = safeLocalStorage.get('user_id')
   const canReview = !isAdmin && Boolean(userId)
+
+  // Call query functions before deriving UI-specific values from the data.
+  const bookId = id || ''
+  const bookQuery = useBookQuery(bookId)
+  const reviewsQuery = useBookReviewsQuery(bookId)
+  const addToCartMutation = useAddToCartMutation()
+  const reviewMutation = useUpsertBookReviewMutation(bookId)
+  const book = bookQuery.data ?? null
+  const reviews = reviewsQuery.data?.items ?? []
+  const loading = bookQuery.isLoading
+  const reviewsLoading = reviewsQuery.isLoading
+
+  // Memoize the review summary so the fallback object stays stable.
+  const reviewSummary = useMemo<ReviewListResponse['summary']>(
+    () =>
+      reviewsQuery.data?.summary ?? {
+        average_rating: 0,
+        total_reviews: 0,
+      },
+    [reviewsQuery.data]
+  )
+
+  const [quantity, setQuantity] = useState(1)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const error = !id
+    ? 'Book id is missing in URL'
+    : bookQuery.isError
+      ? getQueryErrorMessage(bookQuery.error, 'Unable to load book details')
+      : addToCartMutation.isError
+        ? getQueryErrorMessage(
+            addToCartMutation.error,
+            'Unable to add selected quantity'
+          )
+        : ''
+  const reviewsError = !id
+    ? 'Book id is missing in URL'
+    : reviewsQuery.isError
+      ? getQueryErrorMessage(reviewsQuery.error, 'Unable to load reviews')
+      : reviewMutation.isError
+        ? getQueryErrorMessage(reviewMutation.error, 'Unable to save review')
+        : ''
   const pageTitle = book?.name
     ? `${book.name}${book.author_name ? ` by ${book.author_name}` : ''}`
     : loading
@@ -49,93 +77,40 @@ export default function BookDetail(): React.ReactElement {
   usePageTitle(pageTitle)
 
   useEffect(() => {
-    const loadBook = async () => {
-      if (!id) {
-        setError('Book id is missing in URL')
-        setLoading(false)
-        return
-      }
-
-      setLoading(true)
-      setError('')
-      try {
-        const data = await getBookById(id)
-        setBook(data)
-      } catch (e: any) {
-        setError(e?.response?.data?.error || 'Unable to load book details')
-      } finally {
-        setLoading(false)
-      }
+    // Keep the review form aligned with the current user's saved review.
+    const existingReview = reviews.find((entry) => entry.user_id === userId)
+    if (existingReview) {
+      setReviewRating(existingReview.rating)
+      setReviewComment(existingReview.comment || '')
+      return
     }
 
-    void loadBook()
-  }, [id])
-
-  useEffect(() => {
-    const loadReviews = async () => {
-      if (!id) {
-        setReviewsError('Book id is missing in URL')
-        setReviewsLoading(false)
-        return
-      }
-
-      setReviewsLoading(true)
-      setReviewsError('')
-      try {
-        const data = await listBookReviews(id)
-        setReviews(data.items)
-        setReviewSummary(data.summary)
-
-        const existingReview = data.items.find(
-          (entry) => entry.user_id === userId
-        )
-        if (existingReview) {
-          setReviewRating(existingReview.rating)
-          setReviewComment(existingReview.comment || '')
-        }
-      } catch (e: any) {
-        setReviewsError(e?.response?.data?.error || 'Unable to load reviews')
-      } finally {
-        setReviewsLoading(false)
-      }
-    }
-
-    void loadReviews()
-  }, [id, userId])
+    setReviewRating(5)
+    setReviewComment('')
+  }, [reviews, userId])
 
   const handleAddToCart = async () => {
     if (!book) return
-    setAdding(true)
-    setError('')
 
     try {
-      await addToCart(book.id, quantity)
+      await addToCartMutation.mutateAsync({ bookId: book.id, count: quantity })
       toast.success('Book added to cart successfully')
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to add selected quantity')
-    } finally {
-      setAdding(false)
+    } catch (e: unknown) {
+      toast.error(getQueryErrorMessage(e, 'Unable to add selected quantity'))
     }
   }
 
   const handleReviewSubmit = async () => {
     if (!id) return
 
-    setSavingReview(true)
-    setReviewsError('')
     try {
-      await upsertBookReview(id, {
+      await reviewMutation.mutateAsync({
         rating: reviewRating,
         comment: reviewComment.trim(),
       })
-      const refreshed = await listBookReviews(id)
-      setReviews(refreshed.items)
-      setReviewSummary(refreshed.summary)
       toast.success('Your review has been saved')
-    } catch (e: any) {
-      setReviewsError(e?.response?.data?.error || 'Unable to save review')
-    } finally {
-      setSavingReview(false)
+    } catch (e: unknown) {
+      toast.error(getQueryErrorMessage(e, 'Unable to save review'))
     }
   }
 
@@ -270,9 +245,9 @@ export default function BookDetail(): React.ReactElement {
                 type="button"
                 className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
                 onClick={() => void handleAddToCart()}
-                disabled={adding || book.available_stock < 1}
+                disabled={addToCartMutation.isPending || book.available_stock < 1}
               >
-                {adding
+                {addToCartMutation.isPending
                   ? 'Adding...'
                   : book.available_stock < 1
                     ? 'Out of Stock'
@@ -418,9 +393,9 @@ export default function BookDetail(): React.ReactElement {
               <button
                 type="submit"
                 className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
-                disabled={savingReview}
+                disabled={reviewMutation.isPending}
               >
-                {savingReview ? 'Saving...' : 'Save Review'}
+                {reviewMutation.isPending ? 'Saving...' : 'Save Review'}
               </button>
             </form>
           )}

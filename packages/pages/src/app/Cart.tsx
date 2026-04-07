@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { usePageTitle } from '../PageTitleProvider'
 
 import {
-  clearCart,
-  getCart,
-  removeCartItem,
-  checkout,
-  confirmPayment,
-  type CartView,
   type OrderView,
   type PaymentMethod,
-  updateCartItem,
 } from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
+import {
+  getQueryErrorMessage,
+  useCartQuery,
+  useCheckoutMutation,
+  useClearCartMutation,
+  useConfirmPaymentMutation,
+  useRemoveCartItemMutation,
+  useUpdateCartItemMutation,
+} from '../query/hooks'
 
 const paymentMethods: PaymentMethod[] = [
   'COD',
@@ -28,86 +30,88 @@ const paymentMethods: PaymentMethod[] = [
 export default function Cart(): React.ReactElement {
   usePageTitle('Cart')
 
-  const [cart, setCart] = useState<CartView | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  // Initialise local checkout state before wiring mutations into the UI.
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI')
   const [pendingOrder, setPendingOrder] = useState<OrderView | null>(null)
-  const [placing, setPlacing] = useState(false)
 
-  const loadCart = async () => {
-    setLoading(true)
-    setError('')
-
-    try {
-      const data = await getCart()
-      setCart(data)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to load cart')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadCart()
-  }, [])
+  // Call query functions before computing the cart request state.
+  const cartQuery = useCartQuery()
+  const updateCartItemMutation = useUpdateCartItemMutation()
+  const removeCartItemMutation = useRemoveCartItemMutation()
+  const clearCartMutation = useClearCartMutation()
+  const checkoutMutation = useCheckoutMutation()
+  const confirmPaymentMutation = useConfirmPaymentMutation()
+  const cart = cartQuery.data ?? null
+  const loading = cartQuery.isLoading
+  const error = cartQuery.isError
+    ? getQueryErrorMessage(cartQuery.error, 'Failed to load cart')
+    : updateCartItemMutation.isError
+      ? getQueryErrorMessage(
+          updateCartItemMutation.error,
+          'Unable to update quantity'
+        )
+      : removeCartItemMutation.isError
+        ? getQueryErrorMessage(
+            removeCartItemMutation.error,
+            'Unable to remove item'
+          )
+        : clearCartMutation.isError
+          ? getQueryErrorMessage(clearCartMutation.error, 'Unable to clear cart')
+          : checkoutMutation.isError
+            ? getQueryErrorMessage(checkoutMutation.error, 'Checkout failed')
+            : confirmPaymentMutation.isError
+              ? getQueryErrorMessage(
+                  confirmPaymentMutation.error,
+                  'Payment confirmation failed'
+                )
+              : ''
 
   const handleQuantity = async (bookId: string, count: number) => {
     if (count < 1) return
 
-    setError('')
     try {
-      const data = await updateCartItem(bookId, count)
-      setCart(data)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to update quantity')
+      await updateCartItemMutation.mutateAsync({ bookId, count })
+    } catch {
+      return
     }
   }
 
   const handleRemove = async (bookId: string) => {
-    setError('')
     try {
-      const data = await removeCartItem(bookId)
-      setCart(data)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to remove item')
+      await removeCartItemMutation.mutateAsync(bookId)
+    } catch {
+      return
     }
   }
 
   const handleClear = async () => {
-    setError('')
     try {
-      await clearCart()
-      await loadCart()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Unable to clear cart')
+      await clearCartMutation.mutateAsync()
+    } catch {
+      return
     }
   }
 
   const handleCheckout = async () => {
-    setPlacing(true)
-    setError('')
     try {
-      const order = await checkout(paymentMethod)
+      const order = await checkoutMutation.mutateAsync(paymentMethod)
       setPendingOrder(order)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Checkout failed')
-    } finally {
-      setPlacing(false)
+    } catch {
+      return
     }
   }
 
   const handlePaymentResult = async (success: boolean) => {
     if (!pendingOrder) return
 
-    setError('')
     try {
-      const updated = await confirmPayment(pendingOrder.order.id, success)
+      const updated = await confirmPaymentMutation.mutateAsync({
+        orderId: pendingOrder.order.id,
+        success,
+      })
       setPendingOrder(updated)
-      await loadCart()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Payment confirmation failed')
+    } catch {
+      return
     }
   }
 
@@ -236,10 +240,10 @@ export default function Cart(): React.ReactElement {
             <button
               type="button"
               onClick={() => void handleCheckout()}
-              disabled={placing}
+              disabled={checkoutMutation.isPending}
               className="bn-button mt-4 w-full px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {placing ? 'Placing order...' : 'Place Order'}
+              {checkoutMutation.isPending ? 'Placing order...' : 'Place Order'}
             </button>
 
             {pendingOrder && (

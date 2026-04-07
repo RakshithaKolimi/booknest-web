@@ -1,71 +1,54 @@
 import { AuthService, getErrorMessage } from '@booknest/services'
 import { safeLocalStorage } from '@booknest/utils'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 
 import { usePageTitle } from '../PageTitleProvider'
+import {
+  useResendEmailVerificationMutation,
+  useResendMobileOtpMutation,
+  useUpdateUserPreferencesMutation,
+  useUserProfileQuery,
+  useVerifyMobileMutation,
+} from '../query/hooks'
 
 import { getRole } from '@booknest/utils'
 
 export default function Profile(): React.ReactElement {
   usePageTitle('Profile')
 
+  // Initialise variables that drive user lookup and role-based links.
   const userID = safeLocalStorage.get('user_id') || ''
   const role = getRole() || 'READER'
-  const [user, setUser] = useState({
-    first_name: '',
-    last_name: '',
-    email: safeLocalStorage.get('email') || 'Unavailable',
-    mobile: 'Unavailable',
-    email_verified: true,
-    mobile_verified: true,
-    use_sms: false,
-    created_at: '',
-  })
+
+  // Call query functions before shaping the profile view model.
+  const profileQuery = useUserProfileQuery(userID)
+  const resendEmailMutation = useResendEmailVerificationMutation()
+  const resendMobileMutation = useResendMobileOtpMutation()
+  const verifyMobileMutation = useVerifyMobileMutation(userID)
+  const updatePreferencesMutation = useUpdateUserPreferencesMutation(userID)
+
   const [mobileOTP, setMobileOTP] = useState('')
-  const [loadingProfile, setLoadingProfile] = useState(true)
-  const [sendingEmail, setSendingEmail] = useState(false)
-  const [sendingMobile, setSendingMobile] = useState(false)
-  const [verifyingMobile, setVerifyingMobile] = useState(false)
-  const [savingPreferences, setSavingPreferences] = useState(false)
+  const [optimisticUseSms, setOptimisticUseSms] = useState<boolean | null>(null)
 
-  useEffect(() => {
-    if (!userID) {
-      setLoadingProfile(false)
-      return
-    }
-
-    let active = true
-
-    AuthService.getUser(userID)
-      .then((response) => {
-        if (!active) return
-        setUser({
-          first_name: response.first_name,
-          last_name: response.last_name,
-          email: response.email,
-          mobile: response.mobile,
-          email_verified: response.email_verified,
-          mobile_verified: response.mobile_verified,
-          use_sms: response.use_sms,
-          created_at: response.created_at,
-        })
-      })
-      .catch((error: unknown) => {
-        if (!active) return
-        toast.error(getErrorMessage(error, 'Unable to load profile details.'))
-      })
-      .finally(() => {
-        if (active) {
-          setLoadingProfile(false)
-        }
-      })
-
-    return () => {
-      active = false
-    }
-  }, [userID])
+  // Build a stable UI-friendly user object from the query response.
+  const user = useMemo(
+    () => ({
+      first_name: profileQuery.data?.first_name || '',
+      last_name: profileQuery.data?.last_name || '',
+      email:
+        profileQuery.data?.email || safeLocalStorage.get('email') || 'Unavailable',
+      mobile: profileQuery.data?.mobile || 'Unavailable',
+      email_verified: profileQuery.data?.email_verified ?? true,
+      mobile_verified: profileQuery.data?.mobile_verified ?? true,
+      use_sms:
+        optimisticUseSms ?? profileQuery.data?.use_sms ?? false,
+      created_at: profileQuery.data?.created_at || '',
+    }),
+    [optimisticUseSms, profileQuery.data]
+  )
+  const loadingProfile = profileQuery.isLoading
 
   const fullName =
     `${user.first_name} ${user.last_name}`.trim() ||
@@ -90,29 +73,36 @@ export default function Profile(): React.ReactElement {
     })
   })()
 
+  useEffect(() => {
+    if (profileQuery.isError) {
+      toast.error(getErrorMessage(profileQuery.error, 'Unable to load profile details.'))
+    }
+  }, [profileQuery.error, profileQuery.isError])
+
+  useEffect(() => {
+    // Reset the optimistic override once the server responds with fresh data.
+    if (profileQuery.data) {
+      setOptimisticUseSms(null)
+    }
+  }, [profileQuery.data])
+
   const handleResendEmailVerification = async () => {
     try {
-      setSendingEmail(true)
-      await AuthService.resendEmailVerification(user.email)
+      await resendEmailMutation.mutateAsync(user.email)
       toast.success('Verification email sent. Check your inbox.')
     } catch (error: unknown) {
       toast.error(
         getErrorMessage(error, 'Unable to resend verification email.')
       )
-    } finally {
-      setSendingEmail(false)
     }
   }
 
   const handleResendMobileOTP = async () => {
     try {
-      setSendingMobile(true)
-      await AuthService.resendMobileOTP()
+      await resendMobileMutation.mutateAsync()
       toast.success('Verification code sent to your mobile.')
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Unable to resend mobile OTP.'))
-    } finally {
-      setSendingMobile(false)
     }
   }
 
@@ -123,15 +113,11 @@ export default function Profile(): React.ReactElement {
     }
 
     try {
-      setVerifyingMobile(true)
-      await AuthService.verifyMobile(mobileOTP.trim())
-      setUser((current) => ({ ...current, mobile_verified: true }))
+      await verifyMobileMutation.mutateAsync(mobileOTP.trim())
       setMobileOTP('')
       toast.success('Mobile number verified successfully.')
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Unable to verify mobile OTP.'))
-    } finally {
-      setVerifyingMobile(false)
     }
   }
 
@@ -143,23 +129,20 @@ export default function Profile(): React.ReactElement {
     const nextValue = event.target.checked
     const previousValue = user.use_sms
 
-    setUser((current) => ({ ...current, use_sms: nextValue }))
+    setOptimisticUseSms(nextValue)
 
     try {
-      setSavingPreferences(true)
-      await AuthService.updateUserPreferences(userID, { use_sms: nextValue })
+      await updatePreferencesMutation.mutateAsync({ use_sms: nextValue })
       toast.success(
         nextValue
           ? 'SMS notifications enabled for your account.'
           : 'SMS notifications turned off.'
       )
     } catch (error: unknown) {
-      setUser((current) => ({ ...current, use_sms: previousValue }))
+      setOptimisticUseSms(previousValue)
       toast.error(
         getErrorMessage(error, 'Unable to update notification preference.')
       )
-    } finally {
-      setSavingPreferences(false)
     }
   }
 
@@ -231,10 +214,12 @@ export default function Profile(): React.ReactElement {
                   <button
                     type="button"
                     onClick={handleResendEmailVerification}
-                    disabled={sendingEmail}
+                    disabled={resendEmailMutation.isPending}
                     className="mt-4 inline-flex rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {sendingEmail ? 'Sending...' : 'Resend Verification Email'}
+                    {resendEmailMutation.isPending
+                      ? 'Sending...'
+                      : 'Resend Verification Email'}
                   </button>
                 </>
               )}
@@ -261,10 +246,12 @@ export default function Profile(): React.ReactElement {
                     <button
                       type="button"
                       onClick={handleResendMobileOTP}
-                      disabled={sendingMobile}
+                      disabled={resendMobileMutation.isPending}
                       className="inline-flex rounded-xl border border-orange-300 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {sendingMobile ? 'Sending...' : 'Send Mobile OTP'}
+                      {resendMobileMutation.isPending
+                        ? 'Sending...'
+                        : 'Send Mobile OTP'}
                     </button>
                     <input
                       type="text"
@@ -276,10 +263,12 @@ export default function Profile(): React.ReactElement {
                     <button
                       type="button"
                       onClick={handleVerifyMobile}
-                      disabled={verifyingMobile}
+                      disabled={verifyMobileMutation.isPending}
                       className="inline-flex rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {verifyingMobile ? 'Verifying...' : 'Verify Mobile'}
+                      {verifyMobileMutation.isPending
+                        ? 'Verifying...'
+                        : 'Verify Mobile'}
                     </button>
                   </div>
                 </>
@@ -296,7 +285,7 @@ export default function Profile(): React.ReactElement {
                 type="checkbox"
                 checked={user.use_sms}
                 onChange={handleNotificationPreferenceChange}
-                disabled={loadingProfile || savingPreferences}
+                disabled={loadingProfile || updatePreferencesMutation.isPending}
                 className="mt-1 h-4 w-4 rounded border-zinc-300 text-orange-600 focus:ring-orange-500 disabled:cursor-not-allowed"
               />
               <span>
@@ -310,7 +299,7 @@ export default function Profile(): React.ReactElement {
               </span>
             </label>
             <p className="mt-3 text-xs text-zinc-500">
-              {savingPreferences
+              {updatePreferencesMutation.isPending
                 ? 'Saving your preference...'
                 : user.use_sms
                   ? 'SMS notifications are currently enabled.'

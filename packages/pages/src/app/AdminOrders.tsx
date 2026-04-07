@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { usePageTitle } from '../PageTitleProvider'
 
-import {
-  adminUpdateOrderStatus,
-  listAllOrders,
-  type OrderView,
-} from '@booknest/services'
+import { type OrderView } from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
+import {
+  getQueryErrorMessage,
+  useAdminUpdateOrderStatusMutation,
+  useAllOrdersQuery,
+} from '../query/hooks'
 
 export default function AdminOrders(): React.ReactElement {
   usePageTitle('Admin Orders')
 
-  const [orders, setOrders] = useState<OrderView[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  // Initialise UI state for admin cancellation and refund actions.
   const [cancelReasonByOrder, setCancelReasonByOrder] = useState<
     Record<string, string>
   >({})
@@ -23,22 +22,19 @@ export default function AdminOrders(): React.ReactElement {
     Record<string, boolean>
   >({})
 
-  const loadOrders = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await listAllOrders()
-      setOrders(data)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to load admin orders')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadOrders()
-  }, [])
+  // Call query functions before deriving the management state.
+  const ordersQuery = useAllOrdersQuery()
+  const adminUpdateOrderStatusMutation = useAdminUpdateOrderStatusMutation()
+  const orders = ordersQuery.data ?? []
+  const loading = ordersQuery.isLoading
+  const error = ordersQuery.isError
+    ? getQueryErrorMessage(ordersQuery.error, 'Failed to load admin orders')
+    : adminUpdateOrderStatusMutation.isError
+      ? getQueryErrorMessage(
+          adminUpdateOrderStatusMutation.error,
+          'Failed to update order status'
+        )
+      : ''
 
   const handleStatusUpdate = async (
     orderId: string,
@@ -50,35 +46,36 @@ export default function AdminOrders(): React.ReactElement {
         : undefined
 
     if (status === 'CANCELLED' && !cancellationReason) {
-      setError('Please enter a cancellation reason before cancelling')
       return
     }
 
-    setError('')
     try {
-      await adminUpdateOrderStatus(orderId, {
-        status,
-        cancellation_reason: cancellationReason,
+      await adminUpdateOrderStatusMutation.mutateAsync({
+        orderId,
+        payload: {
+          status,
+          cancellation_reason: cancellationReason,
+        },
       })
       if (status === 'CANCELLED') {
         setCancelReasonByOrder((current) => ({ ...current, [orderId]: '' }))
         setShowCancelBoxByOrder((current) => ({ ...current, [orderId]: false }))
       }
-      await loadOrders()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to update order status')
+    } catch {
+      return
     }
   }
 
   const handleRefundCompleted = async (orderId: string) => {
-    setError('')
     try {
-      await adminUpdateOrderStatus(orderId, {
-        payment_status: 'REFUNDED',
+      await adminUpdateOrderStatusMutation.mutateAsync({
+        orderId,
+        payload: {
+          payment_status: 'REFUNDED',
+        },
       })
-      await loadOrders()
-    } catch (e: any) {
-      setError(e?.response?.data?.error || 'Failed to complete refund')
+    } catch {
+      return
     }
   }
 

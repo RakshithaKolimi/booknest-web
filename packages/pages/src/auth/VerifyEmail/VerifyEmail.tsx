@@ -5,6 +5,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
+import {
+  useResendEmailVerificationMutation,
+  useVerifyEmailMutation,
+} from '../../query/hooks'
 
 type VerificationState = 'pending' | 'success' | 'error'
 
@@ -16,7 +20,8 @@ export default function VerifyEmail(): React.ReactElement {
   const email = searchParams.get('email')?.trim() || ''
   const [status, setStatus] = useState<VerificationState>('pending')
   const [message, setMessage] = useState('Verifying your email...')
-  const [resending, setResending] = useState(false)
+  const verifyEmailMutation = useVerifyEmailMutation()
+  const resendEmailMutation = useResendEmailVerificationMutation()
 
   useEffect(() => {
     const token = searchParams.get('token')
@@ -29,9 +34,12 @@ export default function VerifyEmail(): React.ReactElement {
 
     let active = true
 
-    AuthService.verifyEmail(token)
+    verifyEmailMutation
+      .mutateAsync(token)
       .then(() => {
-        if (!active) return
+        if (!active) {
+          return
+        }
         setStatus('success')
         setMessage('Your email has been verified. Redirecting to login...')
         window.setTimeout(() => {
@@ -49,7 +57,7 @@ export default function VerifyEmail(): React.ReactElement {
     return () => {
       active = false
     }
-  }, [navigate, searchParams])
+  }, [navigate, searchParams, verifyEmailMutation])
 
   const handleResend = async () => {
     if (!email) {
@@ -58,13 +66,10 @@ export default function VerifyEmail(): React.ReactElement {
     }
 
     try {
-      setResending(true)
-      await AuthService.resendEmailVerification(email)
+      await resendEmailMutation.mutateAsync(email)
       setMessage('A new verification link has been sent to your email.')
     } catch (error: unknown) {
       setMessage(getErrorMessage(error, 'Unable to resend verification email.'))
-    } finally {
-      setResending(false)
     }
   }
 
@@ -93,10 +98,12 @@ export default function VerifyEmail(): React.ReactElement {
                 <button
                   type="button"
                   onClick={handleResend}
-                  disabled={resending}
+                  disabled={resendEmailMutation.isPending}
                   className="btn-login"
                 >
-                  {resending ? 'Sending...' : 'Resend Verification Email'}
+                  {resendEmailMutation.isPending
+                    ? 'Sending...'
+                    : 'Resend Verification Email'}
                 </button>
               ) : (
                 <p className="text-center text-xs text-zinc-500">

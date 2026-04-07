@@ -1,6 +1,7 @@
 import '../common/index.css'
 
 import { usePageTitle } from '../../PageTitleProvider'
+import { useForgotPasswordMutation } from '../../query/hooks'
 import { Button, Header } from '@booknest/ui'
 import { AuthService, getErrorMessage } from '@booknest/services'
 import React, { useState } from 'react'
@@ -13,7 +14,7 @@ export default function ForgotPassword(): React.ReactElement {
   const [formData, setFormData] = useState({
     email: '',
   })
-  const [loading, setLoading] = useState(false)
+  const forgotPasswordMutation = useForgotPasswordMutation()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -29,9 +30,7 @@ export default function ForgotPassword(): React.ReactElement {
     }
 
     try {
-      setLoading(true)
-
-      const response = await AuthService.forgotPassword({
+      const response = await forgotPasswordMutation.mutateAsync({
         email: formData.email.trim(),
       })
 
@@ -47,8 +46,6 @@ export default function ForgotPassword(): React.ReactElement {
       toast.error(
         getErrorMessage(err, 'Forgot password failed. Please try again.')
       )
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -81,10 +78,12 @@ export default function ForgotPassword(): React.ReactElement {
             </Link>
           </p>
           <Button
-            label={loading ? 'Sending...' : 'Send Reset Link'}
+            label={
+              forgotPasswordMutation.isPending ? 'Sending...' : 'Send Reset Link'
+            }
             className="btn-login"
             type="submit"
-            disabled={loading}
+            disabled={forgotPasswordMutation.isPending}
           />
         </form>
       </div>
