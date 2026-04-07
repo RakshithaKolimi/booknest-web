@@ -92,7 +92,9 @@ export default function ResetPassword(): React.ReactElement {
 
           <Button
             label={
-              resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'
+              resetPasswordMutation.isPending
+                ? 'Resetting...'
+                : 'Reset Password'
             }
             className="btn-login"
             type="submit"

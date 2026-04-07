@@ -79,7 +79,9 @@ export default function ForgotPassword(): React.ReactElement {
           </p>
           <Button
             label={
-              forgotPasswordMutation.isPending ? 'Sending...' : 'Send Reset Link'
+              forgotPasswordMutation.isPending
+                ? 'Sending...'
+                : 'Send Reset Link'
             }
             className="btn-login"
             type="submit"

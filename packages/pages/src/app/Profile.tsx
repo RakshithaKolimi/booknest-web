@@ -38,12 +38,13 @@ export default function Profile(): React.ReactElement {
       first_name: profileQuery.data?.first_name || '',
       last_name: profileQuery.data?.last_name || '',
       email:
-        profileQuery.data?.email || safeLocalStorage.get('email') || 'Unavailable',
+        profileQuery.data?.email ||
+        safeLocalStorage.get('email') ||
+        'Unavailable',
       mobile: profileQuery.data?.mobile || 'Unavailable',
       email_verified: profileQuery.data?.email_verified ?? true,
       mobile_verified: profileQuery.data?.mobile_verified ?? true,
-      use_sms:
-        optimisticUseSms ?? profileQuery.data?.use_sms ?? false,
+      use_sms: optimisticUseSms ?? profileQuery.data?.use_sms ?? false,
       created_at: profileQuery.data?.created_at || '',
     }),
     [optimisticUseSms, profileQuery.data]
@@ -75,7 +76,9 @@ export default function Profile(): React.ReactElement {
 
   useEffect(() => {
     if (profileQuery.isError) {
-      toast.error(getErrorMessage(profileQuery.error, 'Unable to load profile details.'))
+      toast.error(
+        getErrorMessage(profileQuery.error, 'Unable to load profile details.')
+      )
     }
   }, [profileQuery.error, profileQuery.isError])
 

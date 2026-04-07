@@ -30,4 +30,3 @@ export function BookNestQueryProvider({
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   )
 }
-

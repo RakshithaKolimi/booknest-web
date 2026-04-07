@@ -245,7 +245,9 @@ export default function BookDetail(): React.ReactElement {
                 type="button"
                 className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-400"
                 onClick={() => void handleAddToCart()}
-                disabled={addToCartMutation.isPending || book.available_stock < 1}
+                disabled={
+                  addToCartMutation.isPending || book.available_stock < 1
+                }
               >
                 {addToCartMutation.isPending
                   ? 'Adding...'

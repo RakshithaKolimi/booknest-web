@@ -108,16 +108,16 @@ export default function AdminBooks(): React.ReactElement {
     updateCategoryMutation.isPending ||
     deleteCategoryMutation.isPending
   const error = catalogQuery.isError
-    ? getQueryErrorMessage(
-        catalogQuery.error,
-        'Failed to load management data'
-      )
+    ? getQueryErrorMessage(catalogQuery.error, 'Failed to load management data')
     : createBookMutation.isError
       ? getQueryErrorMessage(createBookMutation.error, 'Failed to save book')
       : updateBookMutation.isError
         ? getQueryErrorMessage(updateBookMutation.error, 'Failed to save book')
         : deleteBookMutation.isError
-          ? getQueryErrorMessage(deleteBookMutation.error, 'Failed to delete book')
+          ? getQueryErrorMessage(
+              deleteBookMutation.error,
+              'Failed to delete book'
+            )
           : createAuthorMutation.isError
             ? getQueryErrorMessage(
                 createAuthorMutation.error,

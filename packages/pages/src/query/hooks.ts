@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AuthService,
   addToCart,
@@ -173,13 +169,8 @@ export function useConfirmPaymentMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      orderId,
-      success,
-    }: {
-      orderId: string
-      success: boolean
-    }) => confirmPayment(orderId, success),
+    mutationFn: ({ orderId, success }: { orderId: string; success: boolean }) =>
+      confirmPayment(orderId, success),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.cart })
       void queryClient.invalidateQueries({ queryKey: queryKeys.myOrders })
@@ -301,7 +292,8 @@ export function useLoginMutation() {
 
 export function useRegisterMutation() {
   return useMutation({
-    mutationFn: (input: AuthService.IRegisterInput) => AuthService.register(input),
+    mutationFn: (input: AuthService.IRegisterInput) =>
+      AuthService.register(input),
   })
 }
 

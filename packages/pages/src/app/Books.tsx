@@ -262,8 +262,7 @@ export default function Books(): React.ReactElement {
                       void handleAddToCart(book.id)
                     }}
                     disabled={
-                      addToCartMutation.isPending ||
-                      book.available_stock < 1
+                      addToCartMutation.isPending || book.available_stock < 1
                     }
                   >
                     {addToCartMutation.isPending &&

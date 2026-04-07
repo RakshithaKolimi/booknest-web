@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { usePageTitle } from '../PageTitleProvider'
 
-import {
-  type OrderView,
-  type PaymentMethod,
-} from '@booknest/services'
+import { type OrderView, type PaymentMethod } from '@booknest/services'
 
 import { formatPrice } from '@booknest/utils'
 import {
@@ -56,7 +53,10 @@ export default function Cart(): React.ReactElement {
             'Unable to remove item'
           )
         : clearCartMutation.isError
-          ? getQueryErrorMessage(clearCartMutation.error, 'Unable to clear cart')
+          ? getQueryErrorMessage(
+              clearCartMutation.error,
+              'Unable to clear cart'
+            )
           : checkoutMutation.isError
             ? getQueryErrorMessage(checkoutMutation.error, 'Checkout failed')
             : confirmPaymentMutation.isError
