@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter web build",
+  "buildCommand": "pnpm --filter @booknest/web build",
   "outputDirectory": "apps/web/dist",
   "installCommand": "pnpm install --no-frozen-lockfile",
   "framework": "vite",
