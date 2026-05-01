@@ -30,6 +30,12 @@ Examples:
 - `http://localhost:8080` becomes `http://localhost:8080/api/v1`
 - `http://localhost:8080/api/v1` is used as-is
 
+For production deployments, set `VITE_API_BASE` to the public HTTPS backend origin, for example:
+
+```env
+VITE_API_BASE=https://api.example.com
+```
+
 ## Install and run
 
 From this directory:
@@ -63,6 +69,45 @@ pnpm --filter @booknest/web dev
 pnpm --filter @booknest/web build
 pnpm --filter @booknest/web test
 ```
+
+## Deploy
+
+The web app builds to static files in `apps/web/dist`.
+
+### Vercel
+
+This repository includes `vercel.json` for the monorepo build and React Router fallback.
+
+Recommended Vercel project settings:
+
+- Root Directory: repository root
+- Install Command: `pnpm install --frozen-lockfile`
+- Build Command: `pnpm build`
+- Output Directory: `apps/web/dist`
+- Environment Variable: `VITE_API_BASE=https://your-backend-domain`
+
+After connecting the Git repository in Vercel, set `VITE_API_BASE` in the project environment variables for Production, Preview, and Development as needed, then deploy.
+
+### Amazon S3
+
+Build locally or in CI:
+
+```bash
+pnpm install --frozen-lockfile
+VITE_API_BASE=https://your-backend-domain pnpm build
+```
+
+Upload the built files:
+
+```bash
+aws s3 sync apps/web/dist s3://your-bucket-name --delete
+```
+
+For a plain S3 static website, enable static website hosting and set both the index document and error document to `index.html` so client-side routes can load after refreshes.
+
+For a production domain, put CloudFront in front of the bucket and configure custom error responses for `403` and `404` to return `/index.html` with status `200`. Also attach an ACM certificate and point DNS at the CloudFront distribution.
+
+Before going live, make sure the backend allows CORS from the deployed frontend origin and supports credentials if cookie-based flows are used.
 
 ## Application behavior
 
